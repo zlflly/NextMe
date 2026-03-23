@@ -18,6 +18,7 @@ export default {
 
     if (url.pathname === '/api/guestbook' && request.method === 'GET') {
       const slug = url.searchParams.get('slug') || 'guestbook'
+      const key = url.searchParams.get('key')
 
       const guestbooks = await env.DB.prepare(
         'SELECT * FROM guestbook WHERE slug = ? AND is_reply = 1 ORDER BY created_at DESC'
@@ -27,9 +28,28 @@ export default {
         'SELECT * FROM guestbook WHERE slug = ? AND is_reply = 2 ORDER BY created_at ASC'
       ).bind(slug).all()
 
+      // If key is correct, include email field
+      const includeEmail = key === 'me'
+
+      const formattedGuestbooks = guestbooks.results.map((entry: Record<string, unknown>) => {
+        if (includeEmail) {
+          return entry
+        }
+        const { email, ...rest } = entry
+        return rest
+      })
+
+      const formattedReplies = replies.results.map((entry: Record<string, unknown>) => {
+        if (includeEmail) {
+          return entry
+        }
+        const { email, ...rest } = entry
+        return rest
+      })
+
       return Response.json({
-        guestbooks: guestbooks.results,
-        replies: replies.results,
+        guestbooks: formattedGuestbooks,
+        replies: formattedReplies,
       }, { headers: corsHeaders })
     }
 
@@ -41,6 +61,29 @@ export default {
           return Response.json({ error: 'Missing body or created_by' }, { status: 400, headers: corsHeaders })
         }
 
+        // Check if this is a blog owner reply
+        if (created_by === 'me' && email === 'me@email.com') {
+          // Find the latest unreplied guest message (is_reply=1, reply_to=0)
+          const latestGuest = await env.DB.prepare(
+            'SELECT id FROM guestbook WHERE slug = ? AND is_reply = 1 AND reply_to = 0 ORDER BY created_at DESC LIMIT 1'
+          ).bind(slug).first()
+
+          if (!latestGuest) {
+            return Response.json({ error: 'No unreplied guest message found' }, { status: 400, headers: corsHeaders })
+          }
+
+          const result = await env.DB.prepare(
+            'INSERT INTO guestbook (body, created_by, email, slug, is_reply, reply_to) VALUES (?, ?, ?, ?, 2, ?)'
+          ).bind(body, 'zlflly2005', email, slug, latestGuest.id).run()
+
+          const newEntry = await env.DB.prepare(
+            'SELECT * FROM guestbook WHERE id = ?'
+          ).bind(result.meta.last_row_id).first()
+
+          return Response.json({ success: true, entry: newEntry }, { headers: corsHeaders })
+        }
+
+        // Normal guestbook entry
         const result = await env.DB.prepare(
           'INSERT INTO guestbook (body, created_by, email, slug, is_reply, reply_to) VALUES (?, ?, ?, ?, 1, 0)'
         ).bind(body, created_by, email, slug).run()

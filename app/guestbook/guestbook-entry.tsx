@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { SkeletonBase } from '../components/skeleton-base'
+import { useSearchParams } from 'next/navigation'
 
 interface GuestbookEntry {
   id: number
@@ -15,21 +16,27 @@ interface GuestbookEntry {
   slug: string
   is_banner: number
   banner_url: string
+  email?: string
 }
 
 export default function GuestbookEntries() {
   const [entries, setEntries] = useState<{ guestbooks: GuestbookEntry[], replies: GuestbookEntry[] } | null>(null)
   const [loading, setLoading] = useState(true)
+  const searchParams = useSearchParams()
+  const showEmails = searchParams.get('key') === 'me'
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_GUESTBOOK_API_URL}`)
+    const apiUrl = showEmails
+      ? `${process.env.NEXT_PUBLIC_GUESTBOOK_API_URL}?key=me`
+      : `${process.env.NEXT_PUBLIC_GUESTBOOK_API_URL}`
+    fetch(apiUrl)
       .then((res) => res.json())
       .then((data) => {
         setEntries(data)
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [])
+  }, [showEmails])
 
   if (loading) {
     return (
@@ -90,6 +97,9 @@ export default function GuestbookEntries() {
           <span className="mr-1 text-neutral-600 dark:text-neutral-400">
             {entry.created_by}:
           </span>
+          {showEmails && entry.email && (
+            <span className="mr-1 text-xs text-neutral-400">({entry.email})</span>
+          )}
           {entry.body}
         </div>
         {reply && (

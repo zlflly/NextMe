@@ -54,3 +54,6 @@ public/workbox*.js.map
 public/optimized
 # OpenNext
 .open-next
+
+# local notes (not for public)
+claude-notes.md
