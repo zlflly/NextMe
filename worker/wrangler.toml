@@ -1,0 +1,8 @@
+name = "zlflly-guestbook"
+main = "src/index.ts"
+compatibility_date = "2026-03-17"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "guestbook-db"
+database_id = "3d69a9ac-8354-45dc-ac4d-b08470e1708e"

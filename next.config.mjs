@@ -5,10 +5,7 @@ const bundleAnalyzer = withBundleAnalyzer({
 })
 
 const nextConfig = {
-  output: 'standalone',
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  output: 'export',
   images: {
     unoptimized: true,
   },
@@ -22,5 +19,3 @@ const nextConfig = {
 }
 
 export default bundleAnalyzer(nextConfig)
-
-import('@opennextjs/cloudflare').then(m => m.initOpenNextCloudflareForDev());

@@ -2,13 +2,9 @@
   "name": "hamter",
   "private": true,
   "scripts": {
-    "build": "next build && opennextjs-cloudflare build --skipNextBuild --dangerouslyUseUnsupportedNextVersion",
+    "build": "next build",
     "dev": "next dev",
-    "start": "bun run build && opennextjs-cloudflare preview",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "start": "npx serve@latest out"
   },
   "prettier": {
     "plugins": [
@@ -57,12 +53,10 @@
     "@cloudflare/workers-types": "^4.20260317.1",
     "@medusajs/ui-preset": "^1.1.4",
     "@next/bundle-analyzer": "^14.2.22",
-    "@opennextjs/cloudflare": "^1.17.1",
     "@types/rss": "^0.0.32",
     "eslint": "^9.17.0",
     "eslint-config-next": "14.2.35",
-    "turbo": "^2.3.3",
-    "wrangler": "^4.76.0"
+    "turbo": "^2.3.3"
   },
   "packageManager": "bun@1.0.0"
 }

@@ -22,7 +22,7 @@ export default function GuestbookEntries() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/guestbook')
+    fetch(`${process.env.NEXT_PUBLIC_GUESTBOOK_API_URL}`)
       .then((res) => res.json())
       .then((data) => {
         setEntries(data)
