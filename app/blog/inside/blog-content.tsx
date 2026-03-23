@@ -1,9 +1,9 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { CustomMDX } from '../../../components/mdx'
-import { getBlogPosts } from '../../../db/blog'
-import { getPlaceholderColorFromLocal } from '../../../../lib/images'
-import { BackIcon } from '../../../components/Icon'
+import { CustomMDX } from '../../components/mdx'
+import { getBlogPosts } from '../../db/blog'
+import { getPlaceholderColorFromLocal } from '../../../lib/images'
+import { BackIcon } from '../../components/Icon'
 
 export default async function BlogContent({ slug }) {
   const getPost = getBlogPosts()

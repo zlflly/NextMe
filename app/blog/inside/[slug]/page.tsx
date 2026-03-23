@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-import { getBlogPosts } from 'app/db/blog'
+import { notFound } from 'next/navigation'
+import { getBlogPosts } from '../../../db/blog'
 import BlogContent from '../blog-content'
 
 export async function generateMetadata({
@@ -12,7 +13,7 @@ export async function generateMetadata({
   let post = getPost.find((post) => post.slug === params.slug)
 
   if (!post) {
-    return
+    notFound()
   }
 
   let {
