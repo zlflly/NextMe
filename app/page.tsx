@@ -13,7 +13,7 @@ export default async function Page() {
     <section>
       <section className="sm:px-28 sm:pt-8">
         <Image
-          alt={'Hamster1963'}
+          alt={'zlflly2005'}
           src={avatar}
           height={64}
           width={64}
@@ -29,7 +29,7 @@ export default async function Page() {
           Student, amateur researcher.
         </p>
         <p className={'mb-6 pt-10 text-lg font-medium tracking-tight'}>
-          👋 Hi, I'm Hamster1963.
+          👋 Hi, I'm zlflly2005.
           <br />
           Loves writing code and doing research.
           <br />
