@@ -1,54 +1,78 @@
 'use client'
 import { usePathname, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
+import { clsx } from 'clsx'
+
+type Category = 'tech' | 'inside' | 'daily'
 
 export default function TypeSwitch() {
   const router = useRouter()
   const pathname = usePathname()
-  const [isChecked, setIsChecked] = useState(pathname === '/blog/daily')
+  const [activeCategory, setActiveCategory] = useState<Category>('tech')
 
   useEffect(() => {
-    const isDailyPath = pathname === '/blog/daily'
-    setIsChecked(isDailyPath)
-
-    if (!isDailyPath) {
-      router.prefetch('/blog/daily')
+    if (pathname === '/blog/daily') {
+      setActiveCategory('daily')
+    } else if (pathname === '/blog/inside') {
+      setActiveCategory('inside')
+    } else {
+      setActiveCategory('tech')
     }
+
+    // Prefetch other categories
+    router.prefetch('/blog')
+    router.prefetch('/blog/inside')
+    router.prefetch('/blog/daily')
   }, [pathname, router])
 
-  const handleCheckedChange = useCallback(() => {
-    setIsChecked((prevChecked) => !prevChecked)
-
-    // Use a timeout for animation or transition effects
-    setTimeout(() => {
-      const newPath = pathname === '/blog/daily' ? '/blog' : '/blog/daily'
-      router.push(newPath)
-    }, 300)
-  }, [pathname, router])
+  const handleCategoryChange = useCallback((category: Category) => {
+    setActiveCategory(category)
+    let newPath = '/blog'
+    if (category === 'daily') {
+      newPath = '/blog/daily'
+    } else if (category === 'inside') {
+      newPath = '/blog/inside'
+    }
+    router.push(newPath)
+  }, [router])
 
   return (
-    <div className="flex items-center gap-x-2">
-      <button
-        onClick={handleCheckedChange}
-        type="button"
-        role="switch"
-        aria-checked="false"
-        data-state={isChecked ? 'checked' : 'unchecked'}
-        value="on"
-        className="data-[state=unchecked]:hover:after:bg-switch-off-hover-gradient group relative inline-flex h-[16px] w-[28px] items-center rounded-full bg-ui-bg-switch-off outline-none transition-all duration-300 before:absolute before:inset-0 before:rounded-full before:shadow-details-switch-background before:content-[''] after:absolute after:inset-0 after:rounded-full after:content-[''] hover:bg-ui-bg-switch-off-hover focus-visible:shadow-details-switch-background-focus disabled:cursor-not-allowed disabled:!bg-ui-bg-disabled data-[state=checked]:bg-ui-bg-interactive"
-        id="daily-switch"
-      >
-        <span
-          data-state={isChecked ? 'checked' : 'unchecked'}
-          className="pointer-events-none h-[12px] w-[12px] rounded-full bg-ui-fg-on-color shadow-details-switch-handle transition-all group-disabled:bg-ui-fg-disabled group-disabled:shadow-none data-[state=checked]:translate-x-3.5 data-[state=unchecked]:translate-x-0.5"
-        ></span>
-      </button>
-      <label
-        className="txt-compact-medium font-sans text-[11px] font-normal"
-        htmlFor="daily-switch"
-      >
-        thoughts
-      </label>
+    <div className="mb-6">
+      <div className="inline-flex rounded-full bg-black/80 dark:bg-neutral-800/80 p-0.25">
+        <button
+          onClick={() => handleCategoryChange('tech')}
+          className={clsx(
+            'px-2 py-0.5 text-xs font-medium transition-all',
+            activeCategory === 'tech'
+              ? 'bg-neutral-700 text-white dark:bg-neutral-600 dark:text-white rounded-full'
+              : 'text-neutral-400 hover:text-neutral-300'
+          )}
+        >
+          博客
+        </button>
+        <button
+          onClick={() => handleCategoryChange('inside')}
+          className={clsx(
+            'px-2 py-0.5 text-xs font-medium transition-all',
+            activeCategory === 'inside'
+              ? 'bg-neutral-700 text-white dark:bg-neutral-600 dark:text-white rounded-full'
+              : 'text-neutral-400 hover:text-neutral-300'
+          )}
+        >
+          独白
+        </button>
+        <button
+          onClick={() => handleCategoryChange('daily')}
+          className={clsx(
+            'px-2 py-0.5 text-xs font-medium transition-all',
+            activeCategory === 'daily'
+              ? 'bg-neutral-700 text-white dark:bg-neutral-600 dark:text-white rounded-full'
+              : 'text-neutral-400 hover:text-neutral-300'
+          )}
+        >
+          杂记
+        </button>
+      </div>
     </div>
   )
 }

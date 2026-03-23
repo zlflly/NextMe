@@ -5,7 +5,7 @@ import BlogListClient from 'app/components/blog-list-client'
 export default async function BlogList() {
   let allBlogs = getBlogPosts()
 
-  allBlogs = allBlogs.filter((post) => post.metadata.category !== 'Daily')
+  allBlogs = allBlogs.filter((post) => post.metadata.category === 'Tech')
 
   // Sort blogs by publication date
   allBlogs.sort((a, b) => {
