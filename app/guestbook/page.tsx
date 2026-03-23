@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import Form from './form'
 import GuestbookEntries from './guestbook-entry'
 
@@ -14,7 +15,9 @@ export default function GuestbookPage() {
         Some text about the guestbook.
       </p>
       <GuestbookForm />
-      <GuestbookEntries />
+      <Suspense fallback={<div className="text-sm text-neutral-500">Loading...</div>}>
+        <GuestbookEntries />
+      </Suspense>
     </section>
   )
 }
