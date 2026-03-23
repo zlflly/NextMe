@@ -23,7 +23,7 @@ export default async function Page() {
           priority
         />
         <h1 className="mb-1 text-xl font-medium tracking-tighter">
-          Hamster1963
+          zlflly2005
         </h1>
         <p className="prose prose-neutral text-sm dark:prose-invert">
           Student, amateur researcher.
@@ -31,7 +31,7 @@ export default async function Page() {
         <p className={'mb-6 pt-10 text-lg font-medium tracking-tight'}>
           👋 Hi, I'm Hamster1963.
           <br />
-          Love to write code and write articles.
+          Loves writing code and doing research.
           <br />
           I will share some tech related things and my ideas here.
           <br />
