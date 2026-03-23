@@ -18,13 +18,13 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL || 'https://nextjs.org'),
   title: {
-    default: 'Hamster1963',
-    template: '%s | Hamster1963',
+    default: 'zlflly2005',
+    template: '%s | zlflly2005',
   },
-  description: 'Developer, writer, and creator.',
+  description: 'Student, amateur researcher.',
   openGraph: {
-    title: 'Hamster1963',
-    description: 'Developer, writer, and creator.',
+    title: 'zlflly2005',
+    description: 'Student, amateur researcher.',
     url: process.env.SITE_URL,
     siteName: 'Hamster1963',
     locale: 'zh_CN',
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     },
   },
   twitter: {
-    title: 'Hamster1963',
+    title: 'zlflly2005',
     card: 'summary_large_image',
   },
   alternates: {
