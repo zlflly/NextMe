@@ -1,32 +1,22 @@
 'use client'
 import { usePathname, useRouter } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
 import { clsx } from 'clsx'
 
 type Category = 'tech' | 'inside' | 'daily'
 
+function getCategoryFromPathname(pathname: string): Category {
+  if (pathname === '/blog/daily') return 'daily'
+  if (pathname === '/blog/inside') return 'inside'
+  return 'tech'
+}
+
 export default function TypeSwitch() {
   const router = useRouter()
   const pathname = usePathname()
-  const [activeCategory, setActiveCategory] = useState<Category>('tech')
-
-  useEffect(() => {
-    if (pathname === '/blog/daily') {
-      setActiveCategory('daily')
-    } else if (pathname === '/blog/inside') {
-      setActiveCategory('inside')
-    } else {
-      setActiveCategory('tech')
-    }
-
-    // Prefetch other categories
-    router.prefetch('/blog')
-    router.prefetch('/blog/inside')
-    router.prefetch('/blog/daily')
-  }, [pathname, router])
+  const activeCategory = getCategoryFromPathname(pathname)
 
   const handleCategoryChange = useCallback((category: Category) => {
-    setActiveCategory(category)
     let newPath = '/blog'
     if (category === 'daily') {
       newPath = '/blog/daily'
