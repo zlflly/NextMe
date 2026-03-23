@@ -66,7 +66,7 @@ export default async function BlogContent({ slug }) {
         </p>
       </div>
       <div className="flex w-full flex-col">
-        {post.metadata.image && (
+        {post.metadata.image && placeholderImage?.placeholder && (
           <div
             className={
               'z-20 overflow-hidden rounded-xl transition-all duration-300 sm:my-20 sm:scale-150 dark:brightness-75 dark:hover:brightness-100'
@@ -77,12 +77,12 @@ export default async function BlogContent({ slug }) {
               alt={'Hamster1963'}
               src={post.metadata.image}
               width={
-                placeholderImage.metadata.width
+                placeholderImage.metadata?.width
                   ? placeholderImage.metadata.width
                   : 1920
               }
               height={
-                placeholderImage.metadata.height
+                placeholderImage.metadata?.height
                   ? placeholderImage.metadata.height
                   : 1080
               }

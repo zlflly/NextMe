@@ -11,12 +11,16 @@ export async function generateMetadata({
   }
   let post = getPost.find((post) => post.slug === params.slug)
 
+  if (!post) {
+    return
+  }
+
   let {
     title,
     publishedAt: publishedTime,
     summary: description,
     image,
-  } = post!.metadata
+  } = post.metadata
   let ogImage = image
     ? process.env.SITE_URL + image
     : process.env.SITE_URL + '/og?title=' + title
@@ -29,7 +33,7 @@ export async function generateMetadata({
       description,
       type: 'article',
       publishedTime,
-      url: process.env.SITE_URL + '/blog/inside/' + post!.slug,
+      url: process.env.SITE_URL + '/blog/inside/' + post.slug,
       images: [
         {
           url: ogImage,
