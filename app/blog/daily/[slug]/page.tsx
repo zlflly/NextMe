@@ -47,6 +47,9 @@ export async function generateMetadata({
 
 export async function generateStaticParams() {
   let getPost = getBlogPosts()
+  if (!getPost || !Array.isArray(getPost)) {
+    return []
+  }
   getPost = getPost.filter((post) => post.metadata.category === 'Daily')
 
   return getPost.map((post) => ({
