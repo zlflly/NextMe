@@ -19,3 +19,5 @@ const nextConfig = {
 }
 
 export default bundleAnalyzer(nextConfig)
+
+import('@opennextjs/cloudflare').then(m => m.initOpenNextCloudflareForDev());
