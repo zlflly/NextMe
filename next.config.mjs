@@ -5,7 +5,7 @@ const bundleAnalyzer = withBundleAnalyzer({
 })
 
 const nextConfig = {
-  output: 'export',
+  // output: 'export', // disabled for D1/Cloudflare Pages Functions
   images: {
     unoptimized: true,
   },

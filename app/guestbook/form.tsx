@@ -28,14 +28,29 @@ export default function Form() {
     }
     setDisabled(true)
     setLoading(true)
-    // TODO: Add your logic here
-    // await CreateGuestbookEntry(email, entry, name)
-    setEmail('')
-    setEntry('')
-    setName('')
-    setUnsubmitted(false)
-    setDisabled(false)
-    setLoading(false)
+
+    try {
+      const res = await fetch('/api/guestbook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body: entry, created_by: name }),
+      })
+
+      if (!res.ok) throw new Error('Failed to submit')
+
+      setEmail('')
+      setEntry('')
+      setName('')
+      setUnsubmitted(false)
+
+      // Reload page to show new entry
+      window.location.reload()
+    } catch {
+      alert('Failed to submit. Please try again.')
+    } finally {
+      setDisabled(false)
+      setLoading(false)
+    }
   }
 
   const handleCancel = () => {

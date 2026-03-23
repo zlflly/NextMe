@@ -1,104 +1,61 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { SkeletonBase } from '../components/skeleton-base'
 
-export default function GuestbookEntries() {
-  const entries = [
-    {
-      id: 95,
-      body: '👌前端部分将会加入到博客框架中。',
-      created_by: '仓鼠',
-      created_at: '2024-11-01 09:46:41',
-      updated_at: '2024-11-01 09:46:52',
-      is_reply: 2,
-      reply_to: 94,
-      slug: 'guestbook',
-      is_banner: 2,
-      banner_url: '',
-    },
-    {
-      id: 94,
-      body: '大佬评论页有打算开源吗😘',
-      created_by: 'pangxf',
-      created_at: '2024-11-01 09:42:22',
-      updated_at: '2024-11-01 09:42:22',
-      is_reply: 1,
-      reply_to: 0,
-      slug: 'guestbook',
-      is_banner: 2,
-      banner_url: '',
-    },
-    {
-      id: 84,
-      body: '也没有...您可以在这里https://buycoffee.top/coffee找到赞赏与联系方式。',
-      created_by: '仓鼠',
-      created_at: '2024-10-23 01:09:36',
-      updated_at: '2024-10-23 01:09:47',
-      is_reply: 2,
-      reply_to: 83,
-      slug: 'guestbook',
-      is_banner: 2,
-      banner_url: '',
-    },
-    {
-      id: 83,
-      body: '额我是说你有群什么的吗？',
-      created_by: 'dodo',
-      created_at: '2024-10-22 16:45:03',
-      updated_at: '2024-10-22 16:45:03',
-      is_reply: 1,
-      reply_to: 0,
-      slug: 'guestbook',
-      is_banner: 2,
-      banner_url: '',
-    },
-    {
-      id: 82,
-      body: '没有，都是深夜里慢慢磨...',
-      created_by: '仓鼠',
-      created_at: '2024-10-22 16:17:42',
-      updated_at: '2024-10-22 16:17:50',
-      is_reply: 2,
-      reply_to: 81,
-      slug: 'guestbook',
-      is_banner: 2,
-      banner_url: '',
-    },
-    {
-      id: 81,
-      body: '有组织吗？这风格一眼爱了必须赞赏。',
-      created_by: 'dodo',
-      created_at: '2024-10-22 16:09:07',
-      updated_at: '2024-10-22 16:09:07',
-      is_reply: 1,
-      reply_to: 0,
-      slug: 'guestbook',
-      is_banner: 2,
-      banner_url: '',
-    },
-  ]
+interface GuestbookEntry {
+  id: number
+  body: string
+  created_by: string
+  created_at: string
+  updated_at: string
+  is_reply: number
+  reply_to: number
+  slug: string
+  is_banner: number
+  banner_url: string
+}
 
-  if (!entries || entries.length === 0) {
+export default function GuestbookEntries() {
+  const [entries, setEntries] = useState<{ guestbooks: GuestbookEntry[], replies: GuestbookEntry[] } | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/guestbook')
+      .then((res) => res.json())
+      .then((data) => {
+        setEntries(data)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
+
+  if (loading) {
     return (
-      <>
-        <div className="flex flex-col">
-          <SkeletonBase className="h-5 w-52" />
-          <SkeletonBase className="mt-5 h-5 w-52" />
-          <SkeletonBase className="mt-5 h-5 w-32" />
-          <SkeletonBase className="mt-5 h-5 w-32" />
-          <SkeletonBase className="mt-5 h-5 w-52" />
-          <SkeletonBase className="mt-5 h-5 w-52" />
-          <SkeletonBase className="mt-5 h-5 w-32" />
-        </div>
-      </>
+      <div className="flex flex-col">
+        <SkeletonBase className="h-5 w-52" />
+        <SkeletonBase className="mt-5 h-5 w-52" />
+        <SkeletonBase className="mt-5 h-5 w-32" />
+        <SkeletonBase className="mt-5 h-5 w-32" />
+        <SkeletonBase className="mt-5 h-5 w-52" />
+        <SkeletonBase className="mt-5 h-5 w-52" />
+        <SkeletonBase className="mt-5 h-5 w-32" />
+      </div>
     )
   }
 
-  const guestbooks = entries.filter((entry) => entry.is_reply === 1)
-  const replies = entries.filter((entry) => entry.is_reply === 2)
+  if (!entries || entries.guestbooks.length === 0) {
+    return (
+      <p className="mt-4 text-sm text-neutral-500 dark:text-neutral-400">
+        No messages yet. Be the first to leave a mark!
+      </p>
+    )
+  }
 
-  return guestbooks?.map((entry, index) => {
+  const { guestbooks, replies } = entries
+
+  return guestbooks.map((entry, index) => {
     const reply = replies.find((reply) => reply.reply_to === entry.id)
 
     if (entry.is_banner === 1) {

@@ -50,6 +50,7 @@
     "typescript": "^5.7.2"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260317.1",
     "@medusajs/ui-preset": "^1.1.4",
     "@next/bundle-analyzer": "^14.2.22",
     "@types/rss": "^0.0.32",
