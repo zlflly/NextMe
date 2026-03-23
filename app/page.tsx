@@ -1,9 +1,9 @@
 import Image from 'next/image'
 import avatar from 'app/avatar.webp'
+import campus from 'public/main/campus.webp'
 import desktop from 'public/main/desktop.webp'
-import cloth from 'public/main/cloth.webp'
-import shoe from 'public/main/shoe.webp'
-import home from 'public/main/home.webp'
+import leave_dalian from 'public/main/leave_dalian.webp'
+import xinjiang from 'public/main/xinjiang.webp'
 import Link from 'next/link'
 import { GitHubIcon } from './components/Icon'
 import NowPlayingInit from './components/now-playing'
@@ -72,10 +72,10 @@ export default async function Page() {
 }
 
 function Photos() {
-  const photo_1 = desktop
-  const photo_2 = shoe
-  const photo_3 = cloth
-  const photo_4 = home
+  const photo_1 = campus
+  const photo_2 = desktop
+  const photo_3 = leave_dalian
+  const photo_4 = xinjiang
   return (
     <section
       className={
