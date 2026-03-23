@@ -33,7 +33,7 @@ export default function Form() {
       const res = await fetch(process.env.NEXT_PUBLIC_GUESTBOOK_API_URL!, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body: entry, created_by: name }),
+        body: JSON.stringify({ body: entry, created_by: name, email }),
       })
 
       if (!res.ok) throw new Error('Failed to submit')
