@@ -7,8 +7,16 @@ import xinjiang from 'public/main/xinjiang.webp'
 import Link from 'next/link'
 import { GitHubIcon } from './components/Icon'
 import NowPlayingInit from './components/now-playing'
+import { getBlogPosts } from './db/blog'
 
 export default async function Page() {
+  const blogPosts = getBlogPosts()
+  const latestPost = blogPosts.reduce((latest, post) => {
+    const postDate = new Date(post.metadata.publishedAt)
+    const latestDate = new Date(latest.metadata.publishedAt)
+    return postDate > latestDate ? post : latest
+  })
+
   return (
     <section>
       <section className="sm:px-28 sm:pt-8">
@@ -36,7 +44,7 @@ export default async function Page() {
           I will share some tech related things and my ideas here.
           <br />
         </p>
-        <NowPlayingInit />
+        <NowPlayingInit latestPostDate={latestPost.metadata.publishedAt} />
         <div className={'mt-6 flex items-center'}>
           <Link href="https://github.com/zlflly" target="_blank">
             <button

@@ -1,25 +1,8 @@
 'use client'
 
-import { RenderedTimeAgo } from './rendered-time-age'
 import { useEffect, useState } from 'react'
-import PercentBar from './percent-bar'
-import AnimatedShinyText from './animated-shiny-text'
 
-export default function NowPlayingStatus({
-  play_state,
-  timestamp,
-  play_percent,
-  total_play_time,
-  now_playing_time,
-  show_bar,
-}: {
-  play_state: boolean
-  timestamp: number
-  play_percent: number
-  total_play_time: string
-  now_playing_time: string
-  show_bar: boolean
-}) {
+export default function NowPlayingStatus({ latestPostDate }: { latestPostDate: string }) {
   const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
@@ -39,87 +22,50 @@ export default function NowPlayingStatus({
       </div>
     )
 
-  let lastPlayedString = ''
-  let isExpired = false
-  if (timestamp) {
-    const now = new Date()
-    const timestampInMs = timestamp * 1000
-    const lastPlayedDate = new Date(timestampInMs)
-    const diff = now.getTime() - timestampInMs
-
-    isExpired = diff >= 60 * 1000
-
-    if (isExpired) {
-      const formattedDate = lastPlayedDate.toLocaleDateString('en-US', {
-        weekday: 'long',
-        hour: 'numeric',
-        minute: 'numeric',
-        timeZone: 'Asia/Shanghai',
-        hour12: false,
-      })
-      lastPlayedString = ` ${formattedDate}`
-    }
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    })
   }
 
-  if (isExpired) {
-    return (
-      <div className={'flex items-center justify-between'}>
-        <div className="flex flex-row items-center gap-x-1.5 pl-1">
-          <span className="relative flex h-2 w-2">
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-neutral-200 dark:bg-neutral-700"></span>
-          </span>
-          <div className="text-xs opacity-40">
-            Last played on{lastPlayedString}
-          </div>
-        </div>
-        <RenderedTimeAgo timestamp={timestamp * 1000} />
-      </div>
-    )
+  const isToday = (dateString: string) => {
+    const date = new Date(dateString)
+    const today = new Date()
+    return date.toDateString() === today.toDateString()
   }
+
+  const getDaysSinceUpdate = (dateString: string) => {
+    const date = new Date(dateString)
+    const today = new Date()
+    const diffTime = Math.abs(today.getTime() - date.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    return diffDays
+  }
+
+  const daysSinceUpdate = getDaysSinceUpdate(latestPostDate)
+  const today = isToday(latestPostDate)
+  const displayDate = today ? 'today' : formatDate(latestPostDate)
+  const textColorClass = today ? 'text-green-500' : 'opacity-30'
 
   return (
-    <>
-      <div className={'flex h-6 items-center justify-between'}>
-        <div className="flex flex-row items-center gap-x-1.5 pl-1">
-          {play_state && (
-            <>
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-600 opacity-75"></span>
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-green-600"></span>
-              </span>
-              <AnimatedShinyText className={'text-xs'}>
-                Listening now
-              </AnimatedShinyText>
-            </>
-          )}
-          {!play_state && (
-            <>
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75"></span>
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-orange-400"></span>
-              </span>
-              <div className="text-xs opacity-30">Paused</div>
-            </>
-          )}
+    <div className={'flex h-6 items-center justify-between'}>
+      <div className="flex flex-row items-center gap-x-1.5 pl-1">
+        <span className="relative flex h-2 w-2">
+          <span
+            className={`relative inline-flex h-2 w-2 rounded-full ${today ? 'bg-green-500' : 'bg-neutral-200 dark:bg-neutral-700'}`}
+          ></span>
+        </span>
+        <div className={`text-xs ${textColorClass}`}>
+          Last updated on {displayDate}
         </div>
-
-        {show_bar ? (
-          <div className={'flex flex-col items-end px-1'}>
-            <div className="flex min-w-[60px] items-center justify-end gap-[1px] text-[11px] font-semibold">
-              {now_playing_time}
-              <div className="mb-[1px] ml-[0.5px] text-[9px] font-light opacity-30">
-                /
-              </div>
-              <div className="flex justify-end text-[11px]">
-                {total_play_time}
-              </div>
-            </div>
-            <PercentBar playing={play_state} value={play_percent} />
-          </div>
-        ) : (
-          <div></div>
-        )}
       </div>
-    </>
+
+      <div className="mr-1 text-[11px] font-semibold">
+        <span className="text-white">{daysSinceUpdate}d</span> <span className="opacity-30">ago</span>
+      </div>
+    </div>
   )
 }

@@ -9,6 +9,7 @@ type NowPlayingClientProps = {
   syncMusicData: any
 }
 
+/*
 export function NowPlayingClientSpotify(props: NowPlayingClientProps) {
   const { syncMusicData } = props
   return (
@@ -141,3 +142,4 @@ export function NowPlayingLoading() {
     </div>
   )
 }
+*/
