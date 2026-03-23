@@ -9,7 +9,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  distDir: 'out',
   logging: {
     fetches: {
       fullUrl: true,
