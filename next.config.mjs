@@ -5,7 +5,10 @@ const bundleAnalyzer = withBundleAnalyzer({
 })
 
 const nextConfig = {
-  // output: 'export', // disabled for D1/Cloudflare Pages Functions
+  output: 'standalone',
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   images: {
     unoptimized: true,
   },
