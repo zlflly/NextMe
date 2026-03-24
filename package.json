@@ -2,7 +2,7 @@
   "name": "hamter",
   "private": true,
   "scripts": {
-    "build": "bunx opennextjs-cloudflare build",
+    "build": "./node_modules/.bin/opennextjs-cloudflare build",
     "dev": "next dev",
     "start": "npx serve@latest out"
   },
