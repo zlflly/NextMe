@@ -51,7 +51,7 @@ export default async function InsideList() {
                   height={
                     placeholderImageBlogMap.get(post.slug).metadata?.height || 450
                   }
-                  className="h-full w-full object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100"
+                  className="h-full w-full object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100 blurFadeIn"
                   placeholder="blur"
                   blurDataURL={placeholderImageBlogMap.get(post.slug).placeholder}
                   loading="lazy"

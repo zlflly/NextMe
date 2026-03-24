@@ -97,7 +97,7 @@ export default function BlogListClient({
                     placeholderImageBlogMap.get(firstBlog.slug).metadata?.height ||
                     1080
                   }
-                  className="relative rounded-xl object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100"
+                  className="relative rounded-xl object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100 blurFadeIn"
                   placeholder="blur"
                   blurDataURL={
                     placeholderImageBlogMap.get(firstBlog.slug).placeholder
@@ -145,7 +145,7 @@ export default function BlogListClient({
                         placeholderImageBlogMap.get(post.slug).metadata?.height ||
                         450
                       }
-                      className="h-full w-full object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100"
+                      className="h-full w-full object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100 blurFadeIn"
                       placeholder="blur"
                       blurDataURL={
                         placeholderImageBlogMap.get(post.slug).placeholder

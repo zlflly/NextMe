@@ -118,6 +118,7 @@ export default async function BlogContent({ slug }) {
               }
               placeholder="blur"
               blurDataURL={placeholderImage.placeholder}
+              className="blurFadeIn"
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           </div>
