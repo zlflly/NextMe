@@ -56,6 +56,12 @@ export default function BlogImage({
             alt={alt}
             src={src}
             onLoad={() => setIsLoading(false)}
+            onError={() => setIsLoading(false)}
+            ref={(img) => {
+              if (img?.complete && img.naturalWidth > 0) {
+                setIsLoading(false)
+              }
+            }}
           />
           <span className="pointer-events-none absolute inset-0 block rounded-xl ring-1 ring-inset ring-gray-900/10 dark:ring-white/10" />
         </span>
