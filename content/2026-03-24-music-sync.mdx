@@ -1,0 +1,142 @@
+---
+title: '实现首页音乐播放器与网易云同步'
+publishedAt: '2026-03-24'
+summary: '通过 Last.fm + iTunes Artwork Fallback，让博客首页实时展示正在播放的音乐和封面。支持真实播放时间戳和无数据时的骨架屏占位。'
+category: 'Tech'
+---
+
+## 需求
+
+在博客首页展示我正在听的音乐，包括：
+- 歌曲名、歌手
+- 专辑封面
+- 实时同步
+## 网易云 api
+申请不到api，能申请到可以[试试](https://developer.music.163.com/st/developer)
+
+## Spotify 弃之
+
+最开始想到的是 Spotify 官方 API，流程清晰，文档完善。但web api 需要 Premium 会员。免费账号拿不到实时播放状态，放弃。
+
+## Last.fm
+
+Last.fm 是一个音乐社交平台，支持 **Scrobble（播放记录同步）**：
+- [Web Scrobbler](https://microsoftedge.microsoft.com/addons/detail/web-scrobbler/obiekdelmkmlgnhddmmnpnfhngejbnnc?hl=zh-cn) 浏览器插件可以监听 YouTube、Bilibili、网页版网易云等多个平台的播放状态，自动同步到 Last.fm
+
+![Web Scrobbler 安装截图](/blog-img/WebScrobbler.webp)
+
+- Last.fm 提供免费 API `user.getRecentTracks`，可以获取最近播放
+- 完全免费，不需要会员
+
+### 绑定步骤
+
+1. 注册 [Last.fm](https://www.last.fm/) 账号
+2. 申请 [API Key](https://www.last.fm/api/account/create)，填写应用名即可
+3. 在cloudfare pages 环境变量中添加 `NEXT_PUBLIC_LASTFM_API_KEY` 和 `NEXT_PUBLIC_LASTFM_USERNAME`
+
+![music-key](/blog-img/music-key.webp)
+
+4. 安装 [Web Scrobbler](https://microsoftedge.microsoft.com/addons/detail/web-scrobbler/obiekdelmkmlgnhddmmnpnfhngejbnnc?hl=zh-cn) 浏览器插件（支持 Edge、Chrome、Firefox）
+5. 在插件中登录 Last.fm 账号
+6. 播放支持的平台（YouTube、Bilibili、网页版网易云等），去 Last.fm 个人主页确认记录已同步
+
+![Last.fm](/blog-img/lastfm.webp)
+
+## 实现
+
+### 客户端获取数据
+
+由于是静态博客，服务器端没有 Node.js 运行时环境。选择在客户端直接请求 Last.fm API：
+
+```tsx
+async function getLastfmTrack() {
+  const username = process.env.NEXT_PUBLIC_LASTFM_USERNAME
+  const apiKey = process.env.NEXT_PUBLIC_LASTFM_API_KEY
+  if (!username || !apiKey) return null
+
+  const res = await fetch(
+    `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${username}&api_key=${apiKey}&format=json&limit=1`
+  )
+  const data = await res.json()
+  const track = data.recenttracks?.track?.[0]
+  if (!track) return null
+
+  return {
+    title: track.name,
+    artist: track.artist?.['#text'],
+    albumArt: track.image?.[3]?.['#text'] || null,
+    dateUts: track.date?.uts ? Number(track.date.uts) : Math.floor(Date.now() / 1000),
+  }
+}
+```
+
+### 封面图片 Fallback
+
+Last.fm 的封面图依赖用户提交的 metadata，很多歌曲没有封面。借助 **iTunes Search API** 作为 fallback：
+
+```tsx
+async function getItunesArtwork(title: string, artist: string) {
+  const term = encodeURIComponent(`${title} ${artist}`)
+  const res = await fetch(
+    `https://itunes.apple.com/search?term=${term}&entity=song&limit=1`
+  )
+  const data = await res.json()
+  const artwork = data.results?.[0]?.artworkUrl100
+  if (!artwork) return null
+  // Convert 100x100 to 600x600 for higher quality
+  return artwork.replace('100x100', '600x600')
+}
+```
+
+### 播放时间气泡
+
+用一个时间戳气泡展示「这首歌是多久之前播放的」：
+
+```tsx
+function getTimeAgo(uts: number) {
+  const diff = Math.floor(Date.now() / 1000) - uts
+  if (diff < 60) return { label: 'now', isNow: true }
+  if (diff < 3600) return { label: `${Math.floor(diff / 60)}m ago`, isNow: false }
+  if (diff < 86400) return { label: `${Math.floor(diff / 3600)}h ago`, isNow: false }
+  return { label: `${Math.floor(diff / 86400)}d ago`, isNow: false }
+}
+```
+
+这里的时间戳 `uts` 来自 Last.fm API 返回的真实播放时间 `track.date?.uts`，而不是当前时间。这样气泡显示的就是「这首歌 X 分钟前在网易云播放的」。
+
+### 无数据时的占位符
+
+在没有获取到数据之前（API 还在请求中或请求失败），播放器显示骨架屏占位符：
+
+```tsx
+{isLoaded && lastfmTrack ? (
+  <NowPlaying favoriteSong={lastfmTrack} latestPostDate={latestPostDate} />
+) : (
+  <NowPlayingLoading />
+)}
+```
+
+`NowPlayingLoading` 是一个纯 UI 占位符组件，包含专辑封面槽位、歌曲名和歌手名的骨架块，以及底部的状态栏占位。
+
+## 部署踩坑
+
+### Cloudflare Pages 静态导出
+
+项目用 `output: 'export'` 做静态导出，部署到 Cloudflare Pages。音乐数据在客户端获取，不受静态导出影响。
+
+### 遇到的问题
+
+1. **文件大小超限**：Cloudflare Pages 单文件限制 25 MiB，但打包产物超过这个限制
+2. **Workers 方案复杂**：用 `@opennextjs/cloudflare` 适配层，配置繁琐，Next.js 版本兼容问题多
+
+最终选择保持静态导出 + 客户端获取数据的简单方案。
+
+## 最终效果
+
+首页顶部显示最近播放的歌曲，附带专辑封面和 `X 分钟前` 气泡。封面优先从 Last.fm 获取(基本获取不到)，缺失则从 iTunes 自动补全。数据在客户端获取，请求完成前显示骨架屏占位符。
+
+## 总结
+
+整个方案不需要服务器端代码，不依赖后端服务，纯客户端实现。缺点是首次加载时封面可能有延迟（依赖 iTunes API 响应），优点是部署简单、维护成本低。
+
+如果你也在做个人博客的音乐同步需求，Last.fm + iTunes Fallback 是个可行且免费的方案。

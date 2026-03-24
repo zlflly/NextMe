@@ -128,6 +128,7 @@ export default function BlogListClient({
         {restBlogs.slice(0, visibleBlogs).map((post) => {
           return (
             <Link
+              key={post.slug}
               className="flex flex-col space-y-2"
               href={`/blog/tech/${post.slug}`}
             >

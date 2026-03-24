@@ -34,27 +34,32 @@ export default function BlogImage({
 
   return (
     <>
-      <div
-        className={cn('relative h-full w-full', !isMobile && 'cursor-zoom-in')}
+      <span
+        className={cn(
+          'relative block h-full w-full',
+          !isMobile && 'cursor-zoom-in'
+        )}
         onClick={() => !isMobile && setIsExpanded(true)}
       >
-        <div
-          className="absolute inset-0 rounded-xl"
-          style={{ backgroundColor: hex }}
-        />
-        <img
-          className={cn(
-            'relative h-full w-full rounded-xl object-cover transition-all duration-500 dark:brightness-75 dark:hover:brightness-100',
-            isLoading ? 'opacity-0 blur-lg' : 'opacity-100 blur-0'
-          )}
-          width={width}
-          height={height}
-          alt={alt}
-          src={src}
-          onLoad={() => setIsLoading(false)}
-        />
-        <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-gray-900/10 dark:ring-white/10" />
-      </div>
+        <span className="relative block h-full w-full overflow-hidden rounded-xl">
+          <span
+            className="absolute inset-0 block"
+            style={{ backgroundColor: hex }}
+          />
+          <img
+            className={cn(
+              'relative block h-full w-full object-cover transition-all duration-500 dark:brightness-75 dark:hover:brightness-100',
+              isLoading ? 'opacity-0 blur-lg' : 'opacity-100 blur-0'
+            )}
+            width={width}
+            height={height}
+            alt={alt}
+            src={src}
+            onLoad={() => setIsLoading(false)}
+          />
+          <span className="pointer-events-none absolute inset-0 block rounded-xl ring-1 ring-inset ring-gray-900/10 dark:ring-white/10" />
+        </span>
+      </span>
 
       <AnimatePresence>
         {isExpanded && !isMobile && (
