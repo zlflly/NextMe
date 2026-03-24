@@ -35,6 +35,15 @@ function Table({ data }) {
   )
 }
 
+function Caption({ alt }: { alt: string }) {
+  if (!alt.startsWith('alt:')) return null
+  return (
+    <p className="-mb-0 mt-2 text-center text-[13px] text-neutral-400 dark:text-neutral-600">
+      {alt.replace('alt:', '')}
+    </p>
+  )
+}
+
 function CustomLink(props) {
   let href = props.href
 
@@ -57,7 +66,12 @@ async function CenterImage(props: { src: string; alt: string }) {
   const { src, alt } = props
 
   if (src.startsWith('http')) {
-    return <BlogImage src={src} alt={alt} />
+    return (
+      <>
+        <BlogImage src={src} alt={alt} />
+        <Caption alt={alt} />
+      </>
+    )
   }
 
   const imagePath = src.replaceAll('%20', ' ')
@@ -74,11 +88,7 @@ async function CenterImage(props: { src: string; alt: string }) {
           height={1080}
           hex={'ffffff'}
         />
-        {alt.startsWith('alt:') && (
-          <p className="-mb-0 mt-2 text-center text-[13px] text-neutral-400 dark:text-neutral-600">
-            {alt.replace('alt:', '')}
-          </p>
-        )}
+        <Caption alt={alt} />
       </>
     )
   }
@@ -118,11 +128,7 @@ async function CenterImage(props: { src: string; alt: string }) {
           height={preImage.metadata!.height!}
           hex={preImage.placeholder.hex}
         />
-        {alt.startsWith('alt:') && (
-          <p className="-mb-0 mt-2 text-center text-[13px] text-neutral-400 dark:text-neutral-600">
-            {alt.replace('alt:', '')}
-          </p>
-        )}
+        <Caption alt={alt} />
       </>
     )
   }
@@ -163,11 +169,7 @@ async function CenterImage(props: { src: string; alt: string }) {
         height={preImage.metadata!.height!}
         hex={preImage.placeholder.hex}
       />
-      {alt.startsWith('alt:') && (
-        <p className="-mb-0 mt-2 text-center text-[13px] text-neutral-400 dark:text-neutral-600">
-          {alt.replace('alt:', '')}
-        </p>
-      )}
+      <Caption alt={alt} />
     </>
   )
 }
