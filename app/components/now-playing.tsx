@@ -1,7 +1,33 @@
 'use client'
 import { motion, AnimatePresence } from 'framer-motion'
-import Image from 'next/image'
+import { useEffect, useState } from 'react'
 import NowPlayingStatus from './now-playing-status'
+
+function NowPlayingLoading() {
+  return (
+    <div className="flex flex-col gap-y-1 rounded-[10px] bg-neutral-200/40 p-1 dark:bg-neutral-700/50">
+      <div className="flex w-full justify-between rounded-md border-[0.5px] border-neutral-200 bg-white/80 p-2 shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-none dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-none">
+        <div className="flex gap-x-2">
+          <div className="h-12 w-12 rounded-[3px] bg-neutral-200 dark:bg-neutral-800" />
+          <div className="flex flex-col justify-between py-1.5">
+            <div className="h-4 w-24 rounded-[3px] bg-neutral-100 dark:bg-neutral-800" />
+            <div className="h-3 w-10 rounded-[3px] bg-neutral-100 dark:bg-neutral-800" />
+          </div>
+        </div>
+        <div className="flex flex-col justify-end"></div>
+      </div>
+      <div className={'flex h-6 items-center justify-between'}>
+        <div className="flex flex-row items-center gap-x-1.5 pl-1">
+          <span className="relative flex h-2 w-2">
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-neutral-200 dark:bg-neutral-700"></span>
+          </span>
+          <div className="h-2 w-36 rounded-md bg-neutral-200 dark:bg-neutral-700" />
+        </div>
+        <div className="mr-1 h-2 w-9 rounded-md bg-neutral-200 dark:bg-neutral-700" />
+      </div>
+    </div>
+  )
+}
 
 function getTimeAgo(uts: number) {
   const diff = Math.floor(Date.now() / 1000) - uts
@@ -12,13 +38,13 @@ function getTimeAgo(uts: number) {
 }
 
 export default function NowPlayingInit({ latestPostDate, lastfmTrack }: { latestPostDate: string; lastfmTrack: { title: string; artist: string; albumArt: string; dateUts: number | null } | null }) {
-  // Fallback to favorite song if no Last.fm track
-  const favoriteSong = lastfmTrack || {
-    title: 'Red Bean',
-    artist: 'Khalil Fong',
-    albumArt: 'https://pub-85fe3948f0644e2cba137d74f3630b8b.r2.dev/IMG_4040.jpeg',
-    dateUts: null,
-  }
+  const [isLoaded, setIsLoaded] = useState(false)
+
+  useEffect(() => {
+    if (lastfmTrack !== null) {
+      setIsLoaded(true)
+    }
+  }, [lastfmTrack])
 
   return (
     <div style={{ position: 'relative', minHeight: '100px' }}>
@@ -34,7 +60,11 @@ export default function NowPlayingInit({ latestPostDate, lastfmTrack }: { latest
           animate={{ opacity: 1 }}
           exit={{ opacity: 1 }}
         >
-          <NowPlaying favoriteSong={favoriteSong} latestPostDate={latestPostDate} />
+          {isLoaded && lastfmTrack ? (
+            <NowPlaying favoriteSong={lastfmTrack} latestPostDate={latestPostDate} />
+          ) : (
+            <NowPlayingLoading />
+          )}
         </motion.div>
       </AnimatePresence>
     </div>
@@ -61,7 +91,7 @@ function NowPlaying({ favoriteSong, latestPostDate }: { favoriteSong: { title: s
             <div className="flex items-center gap-1.5 text-sm font-medium">
               {favoriteSong.title}
               {timeAgo && (
-                <span className={`rounded-sm bg-neutral-100 px-1 py-0 text-[10px] font-normal dark:bg-neutral-800 ${timeAgo.isNow ? 'text-green-500' : 'text-neutral-400 dark:text-neutral-500'}`}>
+                <span className={`rounded-sm bg-neutral-100 px-1 py-0 text-[10px] font-normal dark:bg-neutral-800 ${timeAgo.isNow ? 'text-green-500 dark:text-green-400' : 'text-neutral-500 dark:text-neutral-500'}`}>
                   {timeAgo.label}
                 </span>
               )}

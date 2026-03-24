@@ -28,14 +28,14 @@ export default function TypeSwitch() {
 
   return (
     <div className="mb-6">
-      <div className="inline-flex rounded-full bg-black/80 dark:bg-neutral-800/80 p-0.25">
+      <div className="inline-flex gap-1 rounded-[50px] border-[1px] border-solid border-white/15 bg-stone-100 p-[3px] dark:border-stone-700/50 dark:bg-stone-800">
         <button
           onClick={() => handleCategoryChange('tech')}
           className={clsx(
-            'px-2 py-0.5 text-xs font-medium transition-all',
+            'rounded-3xl px-1 py-[2px] text-[10px] font-semibold transition-all duration-300',
             activeCategory === 'tech'
-              ? 'bg-neutral-700 text-white dark:bg-neutral-600 dark:text-white rounded-full'
-              : 'text-neutral-400 hover:text-neutral-300'
+              ? 'bg-white text-black shadow-lg shadow-black/5 dark:bg-stone-700 dark:text-white dark:shadow-none'
+              : 'text-stone-400 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300'
           )}
         >
           博客
@@ -43,10 +43,10 @@ export default function TypeSwitch() {
         <button
           onClick={() => handleCategoryChange('inside')}
           className={clsx(
-            'px-2 py-0.5 text-xs font-medium transition-all',
+            'rounded-3xl px-1 py-[2px] text-[10px] font-semibold transition-all duration-300',
             activeCategory === 'inside'
-              ? 'bg-neutral-700 text-white dark:bg-neutral-600 dark:text-white rounded-full'
-              : 'text-neutral-400 hover:text-neutral-300'
+              ? 'bg-white text-black shadow-lg shadow-black/5 dark:bg-stone-700 dark:text-white dark:shadow-none'
+              : 'text-stone-400 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300'
           )}
         >
           独白
@@ -54,10 +54,10 @@ export default function TypeSwitch() {
         <button
           onClick={() => handleCategoryChange('daily')}
           className={clsx(
-            'px-2 py-0.5 text-xs font-medium transition-all',
+            'rounded-3xl px-1 py-[2px] text-[10px] font-semibold transition-all duration-300',
             activeCategory === 'daily'
-              ? 'bg-neutral-700 text-white dark:bg-neutral-600 dark:text-white rounded-full'
-              : 'text-neutral-400 hover:text-neutral-300'
+              ? 'bg-white text-black shadow-lg shadow-black/5 dark:bg-stone-700 dark:text-white dark:shadow-none'
+              : 'text-stone-400 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300'
           )}
         >
           杂记
