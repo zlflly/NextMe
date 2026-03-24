@@ -85,22 +85,22 @@ export default function BlogListClient({
         >
           <div className="flex w-full flex-col">
             {firstBlog.metadata.image && (
-              <div
-                className={'relative rounded-xl'}
-                style={{
-                  backgroundColor: placeholderImageBlogMap.get(firstBlog.slug)
-                    .placeholder.hex,
-                }}
-              >
-                <img
+              <div className="relative rounded-xl">
+                <Image
                   alt={firstBlog.metadata.title}
-                  className="relative rounded-xl object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100"
                   src={firstBlog.metadata.image}
                   width={
-                    placeholderImageBlogMap.get(firstBlog.slug).metadata.width
+                    placeholderImageBlogMap.get(firstBlog.slug).metadata?.width ||
+                    1920
                   }
                   height={
-                    placeholderImageBlogMap.get(firstBlog.slug).metadata.height
+                    placeholderImageBlogMap.get(firstBlog.slug).metadata?.height ||
+                    1080
+                  }
+                  className="relative rounded-xl object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100"
+                  placeholder="blur"
+                  blurDataURL={
+                    placeholderImageBlogMap.get(firstBlog.slug).placeholder
                   }
                 />
                 <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-gray-900/5 dark:ring-white/5" />
@@ -133,21 +133,26 @@ export default function BlogListClient({
             >
               <div className="flex w-full flex-col">
                 {post.metadata.image && (
-                  <div
-                    className={'relative h-[150px] w-full rounded-xl'}
-                    style={{
-                      backgroundColor: placeholderImageBlogMap.get(post.slug)
-                        .placeholder.hex,
-                    }}
-                  >
-                    <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-gray-900/5 dark:ring-white/5" />
+                  <div className="relative h-[150px] w-full overflow-hidden rounded-xl">
                     <Image
                       alt={'Hamster1963'}
-                      className="rounded-xl object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100"
                       src={post.metadata.image}
-                      fill
+                      width={
+                        placeholderImageBlogMap.get(post.slug).metadata?.width ||
+                        800
+                      }
+                      height={
+                        placeholderImageBlogMap.get(post.slug).metadata?.height ||
+                        450
+                      }
+                      className="h-full w-full object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100"
+                      placeholder="blur"
+                      blurDataURL={
+                        placeholderImageBlogMap.get(post.slug).placeholder
+                      }
                       loading="lazy"
                     />
+                    <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-gray-900/5 dark:ring-white/5" />
                   </div>
                 )}
                 <p className="text-md mt-2 font-medium tracking-tighter transition-all">

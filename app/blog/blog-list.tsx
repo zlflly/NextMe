@@ -1,5 +1,5 @@
 import { getBlogPosts } from '../db/blog'
-import { getPlaceholderColorFromLocal } from '../../lib/images'
+import { getPlaceholderWithBlur } from '../../lib/images'
 import BlogListClient from 'app/components/blog-list-client'
 
 export default async function BlogList() {
@@ -19,10 +19,10 @@ export default async function BlogList() {
   for (const post of allBlogs) {
     let placeholderImage: { src: string; placeholder: any; metadata?: any } = {
       src: '',
-      placeholder: {},
+      placeholder: '',
     }
     if (post?.metadata.image) {
-      placeholderImage = await getPlaceholderColorFromLocal(
+      placeholderImage = await getPlaceholderWithBlur(
         post.slug,
         post.metadata.image
       )

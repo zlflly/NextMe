@@ -1,9 +1,10 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import AI from './ai'
 import { notFound } from 'next/navigation'
 import { CustomMDX, slugify } from '../../../components/mdx'
 import { getBlogPosts } from '../../../db/blog'
-import { getPlaceholderColorFromLocal } from '../../../../lib/images'
+import { getPlaceholderWithBlur } from '../../../../lib/images'
 import TOC from './toc'
 import { BackIcon } from '../../../components/Icon'
 
@@ -43,7 +44,7 @@ export default async function BlogContent({ slug }) {
 
   let placeholderImage
   if (post?.metadata.image) {
-    placeholderImage = await getPlaceholderColorFromLocal(
+    placeholderImage = await getPlaceholderWithBlur(
       post.slug,
       post.metadata.image
     )
@@ -101,9 +102,8 @@ export default async function BlogContent({ slug }) {
             className={
               'z-20 overflow-hidden rounded-xl transition-all duration-300 sm:my-20 sm:scale-150 dark:brightness-75 dark:hover:brightness-100'
             }
-            style={{ backgroundColor: placeholderImage.placeholder.hex }}
           >
-            <img
+            <Image
               alt={'Hamster1963'}
               src={post.metadata.image}
               width={
@@ -116,6 +116,8 @@ export default async function BlogContent({ slug }) {
                   ? placeholderImage.metadata.height
                   : 1080
               }
+              placeholder="blur"
+              blurDataURL={placeholderImage.placeholder}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           </div>

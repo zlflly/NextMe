@@ -112,6 +112,31 @@ export async function getPlaceholderColorFromLocal(
   }
 }
 
+export async function getPlaceholderWithBlur(
+  slug: string,
+  filepath: string
+) {
+  try {
+    const originalBuffer = await getFileBufferLocal(filepath)
+    const resizedBuffer = await sharp(originalBuffer).resize(5).toBuffer()
+    const { metadata, color } = await getPlaiceholder(originalBuffer)
+    return {
+      slug: slug,
+      src: filepath,
+      metadata: metadata,
+      placeholder: bufferToBase64(resizedBuffer),
+    }
+  } catch {
+    return {
+      slug: slug,
+      src: filepath,
+      metadata: undefined,
+      placeholder:
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mOsa2yqBwAFCAICLICSyQAAAABJRU5ErkJggg==',
+    }
+  }
+}
+
 export async function getPlaceholderColorFromBlog(filepath: string) {
   try {
     const originalBuffer = await getFileBufferLocal(filepath)

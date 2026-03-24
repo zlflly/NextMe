@@ -2,7 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { clsx } from 'clsx'
 import { getBlogPosts } from '../../db/blog'
-import { getPlaceholderColorFromLocal } from '../../../lib/images'
+import { getPlaceholderWithBlur } from '../../../lib/images'
 
 export default async function InsideList() {
   let allBlogs = getBlogPosts()
@@ -20,10 +20,10 @@ export default async function InsideList() {
   for (const post of allBlogs) {
     let placeholderImage: { src: string; placeholder: any; metadata?: any } = {
       src: '',
-      placeholder: {},
+      placeholder: '',
     }
     if (post?.metadata.image) {
-      placeholderImage = await getPlaceholderColorFromLocal(
+      placeholderImage = await getPlaceholderWithBlur(
         post.slug,
         post.metadata.image
       )
@@ -41,18 +41,19 @@ export default async function InsideList() {
         >
           <div className="flex w-full flex-col">
             {post.metadata.image && (
-              <div
-                className={'relative h-[150px] w-full rounded-xl'}
-                style={{
-                  backgroundColor: placeholderImageBlogMap.get(post.slug)
-                    .placeholder.hex,
-                }}
-              >
+              <div className="relative h-[150px] w-full overflow-hidden rounded-xl">
                 <Image
                   alt={post.metadata.title}
-                  className="rounded-xl object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100"
                   src={post.metadata.image}
-                  fill
+                  width={
+                    placeholderImageBlogMap.get(post.slug).metadata?.width || 800
+                  }
+                  height={
+                    placeholderImageBlogMap.get(post.slug).metadata?.height || 450
+                  }
+                  className="h-full w-full object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100"
+                  placeholder="blur"
+                  blurDataURL={placeholderImageBlogMap.get(post.slug).placeholder}
                   loading="lazy"
                 />
                 <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-gray-900/5 dark:ring-white/5" />
