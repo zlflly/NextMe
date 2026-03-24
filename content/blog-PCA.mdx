@@ -29,9 +29,11 @@ $$
 $$
 X^\top X = (U\Sigma V^\top)^\top (U\Sigma V^\top)
 $$
+
 $$
 X^\top X = (V^{\top\top} \Sigma^\top U^\top) (U\Sigma V^\top)
 $$
+
 $$
 X^\top X = V \Sigma^\top U^\top U \Sigma V^\top
 $$
@@ -55,7 +57,9 @@ $$X^\top X = V \Sigma I \Sigma V^\top = V \Sigma^2 V^\top$$
 $$\text{Var}[c] = \frac{1}{m-1}C^\top C$$
 
 把 $C = XV$ 代入进去：
+
 $$C^\top C = (XV)^\top (XV)$$
+
 $$C^\top C = V^\top X^\top X V$$
 
 注意到中间出现了 $X^\top X$！我们在上一步已经算出来 $X^\top X = V\Sigma^2 V^\top$ 了，直接把它替换进去：
@@ -63,9 +67,12 @@ $$C^\top C = V^\top (V\Sigma^2 V^\top) V$$
 
 再次利用正交矩阵的性质（$V^\top V = I$），首尾两端都被消去了：
 
+
 $$
 C^\top C = (V^\top V) \Sigma^2 (V^\top V)
 $$
+
+
 $$
 C^\top C = I \cdot \Sigma^2 \cdot I = \Sigma^2
 $$
