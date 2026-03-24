@@ -1,3 +1,0 @@
-name = "zlflly2005"
-compatibility_flags = ["nodejs_compat"]
-pages_build_output_dir = "out"
