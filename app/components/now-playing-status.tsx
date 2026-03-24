@@ -49,6 +49,7 @@ export default function NowPlayingStatus({ latestPostDate }: { latestPostDate: s
   const today = isToday(latestPostDate)
   const displayDate = today ? 'today' : formatDate(latestPostDate)
   const textColorClass = today ? 'text-green-500' : 'opacity-30'
+  const daysDisplay = today ? 0 : daysSinceUpdate
 
   return (
     <div className={'flex h-6 items-center justify-between'}>
@@ -64,7 +65,7 @@ export default function NowPlayingStatus({ latestPostDate }: { latestPostDate: s
       </div>
 
       <div className="mr-1 text-[11px] font-semibold">
-        <span className="text-white">{daysSinceUpdate}d</span> <span className="opacity-30">ago</span>
+        <span className="text-white">{daysDisplay}d</span> <span className="opacity-30">ago</span>
       </div>
     </div>
   )
