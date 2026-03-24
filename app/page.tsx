@@ -9,6 +9,53 @@ import { GitHubIcon } from './components/Icon'
 import NowPlayingInit from './components/now-playing'
 import { getBlogPosts } from './db/blog'
 
+async function getItunesArtwork(title: string, artist: string) {
+  try {
+    const term = encodeURIComponent(`${title} ${artist}`)
+    const res = await fetch(
+      `https://itunes.apple.com/search?term=${term}&entity=song&limit=1`,
+      { next: { revalidate: 86400 } }
+    )
+    if (!res.ok) return null
+    const data = await res.json()
+    const artwork = data.results?.[0]?.artworkUrl100
+    if (!artwork) return null
+    // Convert 100x100 to 600x600 for higher quality
+    return artwork.replace('100x100', '600x600')
+  } catch {
+    return null
+  }
+}
+
+async function getLastfmTrack() {
+  const username = process.env.LASTFM_USERNAME
+  const apiKey = process.env.LASTFM_API_KEY
+
+  if (!username || !apiKey) return null
+
+  try {
+    const res = await fetch(
+      `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${username}&api_key=${apiKey}&format=json&limit=1`,
+      { next: { revalidate: 30 } }
+    )
+    if (!res.ok) return null
+    const data = await res.json()
+    const track = data.recenttracks?.track?.[0]
+    if (!track) return null
+
+    const title = track.name
+    const artist = track.artist?.['#text'] || track.artist
+    const lastfmArt = track.image?.[3]?.['#text'] || track.image?.[2]?.['#text'] || null
+
+    // Fallback to iTunes if Last.fm has no artwork
+    const albumArt = lastfmArt || (await getItunesArtwork(title, artist)) || null
+
+    return { title, artist, albumArt }
+  } catch {
+    return null
+  }
+}
+
 export default async function Page() {
   const blogPosts = getBlogPosts()
   const latestPost = blogPosts.reduce((latest, post) => {
@@ -16,6 +63,8 @@ export default async function Page() {
     const latestDate = new Date(latest.metadata.publishedAt)
     return postDate > latestDate ? post : latest
   })
+
+  const lastfmTrack = await getLastfmTrack()
 
   return (
     <section>
@@ -44,7 +93,7 @@ export default async function Page() {
           I will share some tech related things and my ideas here.
           <br />
         </p>
-        <NowPlayingInit latestPostDate={latestPost.metadata.publishedAt} />
+        <NowPlayingInit latestPostDate={latestPost.metadata.publishedAt} lastfmTrack={lastfmTrack} />
         <div className={'mt-6 flex items-center'}>
           <Link href="https://github.com/zlflly" target="_blank">
             <button

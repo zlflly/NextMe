@@ -3,7 +3,8 @@
     "allow": [
       "Bash(git show:*)",
       "Bash(bun:*)",
-      "Bash(bunx:*)"
+      "Bash(bunx:*)",
+      "WebSearch"
     ]
   }
 }

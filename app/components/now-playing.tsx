@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import NowPlayingStatus from './now-playing-status'
 
-export default function NowPlayingInit({ latestPostDate }: { latestPostDate: string }) {
-  // Favorite song data
-  const favoriteSong = {
+export default function NowPlayingInit({ latestPostDate, lastfmTrack }: { latestPostDate: string; lastfmTrack: { title: string; artist: string; albumArt: string } | null }) {
+  // Fallback to favorite song if no Last.fm track
+  const favoriteSong = lastfmTrack || {
     title: 'Red Bean',
     artist: 'Khalil Fong',
     albumArt: 'https://pub-85fe3948f0644e2cba137d74f3630b8b.r2.dev/IMG_4040.jpeg'
