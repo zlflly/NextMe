@@ -50,7 +50,7 @@ async function getLastfmTrack() {
     // Fallback to iTunes if Last.fm has no artwork
     const albumArt = lastfmArt || (await getItunesArtwork(title, artist)) || null
 
-    return { title, artist, albumArt }
+    return { title, artist, albumArt, dateUts: Math.floor(Date.now() / 1000) }
   } catch {
     return null
   }

@@ -3,12 +3,21 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import NowPlayingStatus from './now-playing-status'
 
-export default function NowPlayingInit({ latestPostDate, lastfmTrack }: { latestPostDate: string; lastfmTrack: { title: string; artist: string; albumArt: string } | null }) {
+function getTimeAgo(uts: number) {
+  const diff = Math.floor(Date.now() / 1000) - uts
+  if (diff < 60) return { label: 'now', isNow: true }
+  if (diff < 3600) return { label: `${Math.floor(diff / 60)}m ago`, isNow: false }
+  if (diff < 86400) return { label: `${Math.floor(diff / 3600)}h ago`, isNow: false }
+  return { label: `${Math.floor(diff / 86400)}d ago`, isNow: false }
+}
+
+export default function NowPlayingInit({ latestPostDate, lastfmTrack }: { latestPostDate: string; lastfmTrack: { title: string; artist: string; albumArt: string; dateUts: number | null } | null }) {
   // Fallback to favorite song if no Last.fm track
   const favoriteSong = lastfmTrack || {
     title: 'Red Bean',
     artist: 'Khalil Fong',
-    albumArt: 'https://pub-85fe3948f0644e2cba137d74f3630b8b.r2.dev/IMG_4040.jpeg'
+    albumArt: 'https://pub-85fe3948f0644e2cba137d74f3630b8b.r2.dev/IMG_4040.jpeg',
+    dateUts: null,
   }
 
   return (
@@ -32,7 +41,9 @@ export default function NowPlayingInit({ latestPostDate, lastfmTrack }: { latest
   )
 }
 
-function NowPlaying({ favoriteSong, latestPostDate }: { favoriteSong: { title: string, artist: string, albumArt: string }, latestPostDate: string }) {
+function NowPlaying({ favoriteSong, latestPostDate }: { favoriteSong: { title: string; artist: string; albumArt: string; dateUts: number | null }; latestPostDate: string }) {
+  const timeAgo = favoriteSong.dateUts ? getTimeAgo(favoriteSong.dateUts) : null
+
   return (
     <div className="flex flex-col gap-y-1 rounded-[10px] bg-neutral-200/40 p-1 dark:bg-neutral-700/50">
       <div className="relative flex w-full rounded-md border-[0.5px] border-neutral-200 bg-white/80 p-2 shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-none dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-none">
@@ -49,6 +60,11 @@ function NowPlaying({ favoriteSong, latestPostDate }: { favoriteSong: { title: s
           <div className="flex flex-col justify-between py-1">
             <div className="flex items-center gap-1.5 text-sm font-medium">
               {favoriteSong.title}
+              {timeAgo && (
+                <span className={`rounded-sm bg-neutral-100 px-1 py-0 text-[10px] font-normal dark:bg-neutral-800 ${timeAgo.isNow ? 'text-green-500' : 'text-neutral-400 dark:text-neutral-500'}`}>
+                  {timeAgo.label}
+                </span>
+              )}
             </div>
             <div className="text-xs opacity-30">{favoriteSong.artist}</div>
           </div>
