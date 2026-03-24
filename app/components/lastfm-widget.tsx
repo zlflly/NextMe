@@ -55,7 +55,7 @@ export default function LastfmWidget({ latestPostDate }: { latestPostDate: strin
           title,
           artist,
           albumArt,
-          dateUts: Math.floor(Date.now() / 1000),
+          dateUts: track.date?.uts ? Number(track.date.uts) : Math.floor(Date.now() / 1000),
         })
       } catch {
         // silently fail
