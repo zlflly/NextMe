@@ -91,7 +91,7 @@ async function getItunesArtwork(title: string, artist: string) {
 
 ### 播放时间气泡
 
-用一个时间戳气泡展示「这首歌是多久之前播放的」：
+用一个时间戳气泡展示这首歌是多久之前播放的：
 
 ```tsx
 function getTimeAgo(uts: number) {
@@ -119,18 +119,6 @@ function getTimeAgo(uts: number) {
 
 `NowPlayingLoading` 是一个纯 UI 占位符组件，包含专辑封面槽位、歌曲名和歌手名的骨架块，以及底部的状态栏占位。
 
-## 部署踩坑
-
-### Cloudflare Pages 静态导出
-
-项目用 `output: 'export'` 做静态导出，部署到 Cloudflare Pages。音乐数据在客户端获取，不受静态导出影响。
-
-### 遇到的问题
-
-1. **文件大小超限**：Cloudflare Pages 单文件限制 25 MiB，但打包产物超过这个限制
-2. **Workers 方案复杂**：用 `@opennextjs/cloudflare` 适配层，配置繁琐，Next.js 版本兼容问题多
-
-最终选择保持静态导出 + 客户端获取数据的简单方案。
 
 ## 最终效果
 
