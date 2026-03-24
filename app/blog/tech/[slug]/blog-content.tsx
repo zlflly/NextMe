@@ -107,12 +107,12 @@ export default async function BlogContent({ slug }) {
               alt={'Hamster1963'}
               src={post.metadata.image}
               width={
-                placeholderImage.metadata.width
+                placeholderImage.metadata?.width
                   ? placeholderImage.metadata.width
                   : 1920
               }
               height={
-                placeholderImage.metadata.height
+                placeholderImage.metadata?.height
                   ? placeholderImage.metadata.height
                   : 1080
               }

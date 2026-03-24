@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { CustomMDX } from '../../../components/mdx'
 import { getBlogPosts } from '../../../db/blog'
+import { getPlaceholderColorFromLocal } from '../../../../lib/images'
 import { BackIcon } from '../../../components/Icon'
 
 export default async function DailyContent({ slug }) {
@@ -11,6 +12,14 @@ export default async function DailyContent({ slug }) {
     notFound()
   }
   let post = getPost.find((post) => post.slug === slug)
+
+  let placeholderImage
+  if (post?.metadata.image) {
+    placeholderImage = await getPlaceholderColorFromLocal(
+      post.slug,
+      post.metadata.image
+    )
+  }
 
   if (!post) {
     notFound()
@@ -50,7 +59,33 @@ export default async function DailyContent({ slug }) {
           {formatDate(post.metadata.publishedAt)}
         </p>
       </div>
-      <article className="prose prose-neutral prose-quoteless dark:prose-invert">
+      <div className="flex w-full flex-col">
+        {post.metadata.image && (
+          <div
+            className={
+              'z-20 overflow-hidden rounded-xl transition-all duration-300 sm:my-20 sm:scale-150 dark:brightness-75 dark:hover:brightness-100'
+            }
+            style={{ backgroundColor: placeholderImage.placeholder.hex }}
+          >
+            <img
+              alt={'Hamster1963'}
+              src={post.metadata.image}
+              width={
+                placeholderImage.metadata?.width
+                  ? placeholderImage.metadata.width
+                  : 1920
+              }
+              height={
+                placeholderImage.metadata?.height
+                  ? placeholderImage.metadata.height
+                  : 1080
+              }
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          </div>
+        )}
+      </div>
+      <article className="prose prose-neutral prose-quoteless text-[15px] dark:prose-invert">
         <CustomMDX source={post.content} />
       </article>
     </>
