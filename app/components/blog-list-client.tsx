@@ -134,7 +134,7 @@ export default function BlogListClient({
               <div className="flex w-full flex-col">
                 {post.metadata.image && (
                   <div
-                    className={'relative rounded-xl'}
+                    className={'relative h-[150px] w-full rounded-xl'}
                     style={{
                       backgroundColor: placeholderImageBlogMap.get(post.slug)
                         .placeholder.hex,
@@ -145,12 +145,7 @@ export default function BlogListClient({
                       alt={'Hamster1963'}
                       className="rounded-xl object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100"
                       src={post.metadata.image}
-                      width={
-                        placeholderImageBlogMap.get(post.slug).metadata.width
-                      }
-                      height={
-                        placeholderImageBlogMap.get(post.slug).metadata.height
-                      }
+                      fill
                       loading="lazy"
                     />
                   </div>
