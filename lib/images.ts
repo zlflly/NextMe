@@ -7,6 +7,19 @@ function bufferToBase64(buffer: Buffer): string {
   return `data:image/png;base64,${buffer.toString('base64')}`
 }
 
+function adjustDarkColor(color: { r: number; g: number; b: number; hex: string }) {
+  const threshold = 30
+  if (color.r < threshold && color.g < threshold && color.b < threshold) {
+    return {
+      r: 200,
+      g: 200,
+      b: 200,
+      hex: '#c8c8c8',
+    }
+  }
+  return color
+}
+
 export async function getFileBufferLocal(filepath: string) {
   const realFilepath = path.join(process.cwd(), 'public', filepath)
   return fs.readFile(realFilepath)
@@ -57,7 +70,7 @@ export async function getPlaceholderBlogImage(filepath: string) {
     return {
       src: filepath,
       metadata: metadata,
-      placeholder: color,
+      placeholder: adjustDarkColor(color),
     }
   } catch {
     return {
@@ -83,7 +96,7 @@ export async function getPlaceholderColorFromLocal(
       slug: slug,
       src: filepath,
       metadata: metadata,
-      placeholder: color,
+      placeholder: adjustDarkColor(color),
     }
   } catch {
     return {
@@ -105,7 +118,7 @@ export async function getPlaceholderColorFromBlog(filepath: string) {
     const { color } = await getPlaiceholder(originalBuffer)
     return {
       src: filepath,
-      placeholder: color,
+      placeholder: adjustDarkColor(color),
     }
   } catch {
     return {
