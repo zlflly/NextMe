@@ -7,6 +7,7 @@ import xinjiang from 'public/main/xinjiang.webp'
 import Link from 'next/link'
 import { GitHubIcon } from './components/Icon'
 import LastfmWidget from './components/lastfm-widget'
+import SubscribeButton from './components/subscribe-button'
 import { getBlogPosts } from './db/blog'
 
 export default async function Page() {
@@ -56,22 +57,15 @@ export default async function Page() {
               <p>GitHub</p>
             </button>
           </Link>
-          <span className="mr-2 h-2 w-2 rounded-full bg-blue-500"></span>
-          <Link
-            href={'https://home.buycoffee.top'}
-            target="_blank"
-            className="text-xs font-medium"
-          >
-            Monitor
-          </Link>
-          <p className="mx-1 text-xs font-medium">/</p>
+          <SubscribeButton />
+          {/* <p className="mx-1 text-xs font-medium">/</p>
           <Link
             href={'https://changelog.buycoffee.top'}
             target="_blank"
             className="text-xs font-medium"
           >
             Changelog
-          </Link>
+          </Link> */}
         </div>
       </section>
       <Photos />

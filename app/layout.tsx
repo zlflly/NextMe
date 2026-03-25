@@ -15,6 +15,10 @@ export const viewport: Viewport = {
   userScalable: false,
 }
 
+export const links = () => [
+  { rel: 'alternate', type: 'application/rss+xml', title: 'RSS 订阅', href: '/rss' },
+]
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL || 'https://nextjs.org'),
   title: {
@@ -26,7 +30,7 @@ export const metadata: Metadata = {
     title: 'zlflly2005',
     description: 'Student, amateur researcher.',
     url: process.env.SITE_URL,
-    siteName: 'Hamster1963',
+    siteName: 'zlflly2005',
     locale: 'zh_CN',
     type: 'website',
   },

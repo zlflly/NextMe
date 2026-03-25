@@ -1,10 +1,36 @@
+/*
+ * ============================================================
+ * 动画说明 - Tech 文章封面图片动画
+ * ============================================================
+ *
+ * 【实现原理】
+ * 使用 BlogImage 组件实现 blur-up 动画：
+ * 1. 初始状态: opacity-0 blur-lg（透明 + 模糊）
+ * 2. 加载完成: onLoad 触发后切换 opacity-100 blur-0
+ * 3. 过渡时长: transition-all duration-500（500ms）
+ * 4. 点击放大: 桌面端点击触发 framer-motion AnimatePresence 放大弹窗
+ *
+ * 【代码级实现】
+ * - 引入 BlogImage 组件 from '../../../components/blog-image'
+ * - 使用 getPlaceholderColorFromLocal 获取 hex 背景色
+ * - BlogImage 组件内部处理 isLoading 状态和 onLoad 事件
+ *
+ * 【一致性要求】
+ * 如果修改此动画，必须同步修改以下文件（使用相同 BlogImage 组件）：
+ *   - app/blog/inside/blog-content.tsx
+ *   - app/blog/daily/[slug]/blog-content.tsx
+ *   - app/components/blog-image.tsx（核心组件）
+ *
+ * ============================================================
+ */
+
 import Link from 'next/link'
-import Image from 'next/image'
 import AI from './ai'
+import BlogImage from '../../../components/blog-image'
 import { notFound } from 'next/navigation'
 import { CustomMDX, slugify } from '../../../components/mdx'
 import { getBlogPosts } from '../../../db/blog'
-import { getPlaceholderWithBlur } from '../../../../lib/images'
+import { getPlaceholderColorFromLocal } from '../../../../lib/images'
 import TOC from './toc'
 import { BackIcon } from '../../../components/Icon'
 
@@ -44,7 +70,7 @@ export default async function BlogContent({ slug }) {
 
   let placeholderImage
   if (post?.metadata.image) {
-    placeholderImage = await getPlaceholderWithBlur(
+    placeholderImage = await getPlaceholderColorFromLocal(
       post.slug,
       post.metadata.image
     )
@@ -98,14 +124,10 @@ export default async function BlogContent({ slug }) {
       {post.metadata.ai && <AI ai={post.metadata.ai} />}
       <div className="flex w-full flex-col">
         {post.metadata.image && (
-          <div
-            className={
-              'z-20 overflow-hidden rounded-xl transition-all duration-300 sm:my-20 sm:scale-150 dark:brightness-75 dark:hover:brightness-100'
-            }
-          >
-            <Image
-              alt={'Hamster1963'}
+          <div className="z-20 overflow-hidden rounded-xl">
+            <BlogImage
               src={post.metadata.image}
+              alt={post.metadata.title}
               width={
                 placeholderImage.metadata?.width
                   ? placeholderImage.metadata.width
@@ -116,10 +138,7 @@ export default async function BlogContent({ slug }) {
                   ? placeholderImage.metadata.height
                   : 1080
               }
-              placeholder="blur"
-              blurDataURL={placeholderImage.placeholder}
-              className="blurFadeIn"
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              hex={placeholderImage.placeholder.hex}
             />
           </div>
         )}
