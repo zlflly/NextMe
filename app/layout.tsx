@@ -15,10 +15,6 @@ export const viewport: Viewport = {
   userScalable: false,
 }
 
-export const links = () => [
-  { rel: 'alternate', type: 'application/rss+xml', title: 'RSS 订阅', href: '/rss' },
-]
-
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL || 'https://nextjs.org'),
   title: {
