@@ -84,22 +84,25 @@ export default function BlogImage({
     setIsLoaded(true)
   }
 
+  const aspectRatio = width && height ? width / height : undefined
+
   return (
     <>
       <div
         ref={imgRef}
-        className={cn('relative h-full w-full', !isMobile && 'cursor-zoom-in')}
+        className={cn('relative w-full', !isMobile && 'cursor-zoom-in')}
+        style={aspectRatio ? { aspectRatio } : undefined}
         onClick={() => !isMobile && setIsExpanded(true)}
       >
         <div
           className="absolute inset-0 rounded-xl"
-          style={{ backgroundColor: hex }}
+          style={{ backgroundColor: hex || '#f0f0f0' }}
         />
         {shouldLoad && (
           <img
             className={cn(
-              'relative h-full w-full rounded-xl object-cover transition-all duration-1000 ease-out dark:brightness-75 dark:hover:brightness-100',
-              !isFadingIn ? 'opacity-0' : isLoaded ? 'opacity-100' : 'opacity-0'
+              'absolute inset-0 h-full w-full rounded-xl object-cover transition-all duration-500 dark:brightness-75 dark:hover:brightness-100',
+              !isFadingIn ? 'opacity-0 blur-lg' : isLoaded ? 'opacity-100 blur-0' : 'opacity-0 blur-lg'
             )}
             width={width}
             height={height}

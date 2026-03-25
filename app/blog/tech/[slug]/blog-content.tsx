@@ -6,6 +6,7 @@ import { getBlogPosts } from '../../../db/blog'
 import { getPlaceholderColorFromLocal } from '../../../../lib/images'
 import TOC from './toc'
 import { BackIcon } from '../../../components/Icon'
+import BlurImage from '../../../components/blog-image'
 
 interface Heading {
   level: number
@@ -99,11 +100,10 @@ export default async function BlogContent({ slug }) {
         {post.metadata.image && (
           <div
             className={
-              'z-20 overflow-hidden rounded-xl transition-all duration-300 sm:my-20 sm:scale-150 dark:brightness-75 dark:hover:brightness-100'
+              'z-20 overflow-hidden rounded-xl sm:my-20 sm:scale-150'
             }
-            style={{ backgroundColor: placeholderImage.placeholder.hex }}
           >
-            <img
+            <BlurImage
               alt={'Hamster1963'}
               src={post.metadata.image}
               width={
@@ -116,7 +116,7 @@ export default async function BlogContent({ slug }) {
                   ? placeholderImage.metadata.height
                   : 1080
               }
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              hex={placeholderImage.placeholder.hex}
             />
           </div>
         )}
