@@ -47,9 +47,9 @@ export default function TOC({ headings }) {
       const clampedProgress = Math.min(100, Math.max(0, progress))
       setReadingProgress(clampedProgress)
 
-      if (clampedProgress >= 100) {
+      if (clampedProgress >= 95) {
         setIsCompleted(true)
-      } else if (clampedProgress < 95) {
+      } else if (clampedProgress < 85) {
         setIsCompleted(false)
       }
     }
