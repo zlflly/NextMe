@@ -1,30 +1,3 @@
-/*
- * ============================================================
- * 动画说明 - 文章内图片 Blur-up 动画
- * ============================================================
- *
- * 【实现原理】
- * 1. 初始状态: 图片 opacity-0 blur-lg（透明 + 模糊）
- * 2. 加载完成: onLoad 触发后切换 isLoading=false
- * 3. 过渡效果: opacity-100 blur-0（不透明 + 清晰）
- * 4. 过渡时长: transition-all duration-500（500ms）
- * 5. 点击放大: 桌面端点击触发 framer-motion AnimatePresence 放大弹窗
- *
- * 【代码级实现】
- * - isLoading 状态控制 CSS 类切换
- * - onLoad 事件触发状态变更
- * - framer-motion motion.img 实现 scale 缩放动画
- *
- * 【一致性要求】
- * 如果修改此动画，必须同步修改以下文件（使用相同 BlogImage 组件）：
- *   - app/blog/tech/[slug]/blog-content.tsx
- *   - app/blog/inside/blog-content.tsx
- *   - app/blog/daily/[slug]/blog-content.tsx
- *   - app/components/mdx.tsx (CenterImage 组件调用)
- *
- * ============================================================
- */
-
 'use client'
 
 import { cn } from 'lib/utils'

@@ -1,34 +1,7 @@
-/*
- * ============================================================
- * 动画说明 - MDX 图片动画
- * ============================================================
- *
- * 【实现原理】
- * MDX 文章内的图片通过 CenterImage 组件处理，使用 BlogImage 组件实现 blur-up 动画：
- * 1. 初始状态: opacity-0 blur-lg（透明 + 模糊）
- * 2. 加载完成: onLoad 触发后切换 opacity-100 blur-0
- * 3. 过渡时长: transition-all duration-500（500ms）
- * 4. 点击放大: 桌面端点击触发 framer-motion AnimatePresence 放大弹窗
- *
- * 【代码级实现】
- * - CenterImage 组件调用 BlogImage 组件
- * - 支持开发环境直接显示和生成环境优化图片
- * - caption 通过 alt:text 格式内联处理
- *
- * 【一致性要求】
- * 此文件动画依赖于 BlogImage 组件，如有修改必须同步：
- *   - app/components/blog-image.tsx
- *
- * ============================================================
- */
-
 import Link from 'next/link'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import { highlight } from 'sugar-high'
 import React from 'react'
-import remarkMath from 'remark-math'
-import rehypeKatex from 'rehype-katex'
-import 'katex/dist/katex.min.css'
 import TechCard from './tech-card'
 import { getFileBufferLocal, getPlaceholderBlogImage } from 'lib/images'
 import BlogImage from './blog-image'
@@ -317,12 +290,6 @@ export function CustomMDX(props) {
     <MDXRemote
       {...props}
       components={{ ...components, ...(props.components || {}) }}
-      options={{
-        mdxOptions: {
-          remarkPlugins: [remarkMath],
-          rehypePlugins: [rehypeKatex],
-        },
-      }}
     />
   )
 }

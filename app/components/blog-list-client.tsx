@@ -1,36 +1,3 @@
-/*
- * ============================================================
- * 动画说明 - 博客列表页图片动画
- * ============================================================
- *
- * 【实现原理 - First Blog 大图】
- * 1. 背景占位: 使用 placeholder.hex 颜色作为背景色
- * 2. 图片过渡: transition-all duration-500 + dark:brightness-75/100
- * 3. 光环效果: ring-1 ring-inset ring-gray-900/5 dark:ring-white/5
- * 4. 动画类型: CSS opacity 过渡（非 blur-up，使用 Next/Image placeholder="blur"）
- *
- * 【实现原理 - Rest Blogs 网格图】
- * 1. 背景占位: 使用 placeholder.hex 颜色作为背景色
- * 2. 图片加载: Next.js Image + loading="lazy"（懒加载）
- * 3. 过渡动画: transition-all duration-500 + dark:brightness-75/100
- * 4. 光环效果: ring-1 ring-inset ring-gray-900/5 dark:ring-white/5
- *
- * 【代码级实现】
- * - 背景色通过 style={{ backgroundColor: placeholder.hex }} 设置
- * - 网格列表使用 IntersectionObserver 实现无限滚动
- * - 图片使用 Next.js Image 组件的原生懒加载
- *
- * 【一致性要求】
- * 如果修改博客列表的图片动画样式，必须同步修改：
- *   - app/blog/inside/inside-list.tsx（使用完全相同的动画模式）
- *
- * 【注意】
- * 博客列表页使用 Next/Image + placeholder blur，
- * 与 BlogImage 组件的 CSS blur-up 实现不同，但视觉过渡效果一致。
- *
- * ============================================================
- */
-
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
@@ -157,10 +124,12 @@ export default function BlogListClient({
           </div>
         </Link>
       )}
-      <section className={clsx('mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2')}>
+      <div className={clsx('mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2')}>
         {restBlogs.slice(0, visibleBlogs).map((post) => {
+          const isLoaded = loadedImages.includes(post.slug)
           return (
             <Link
+              key={post.slug}
               className="flex flex-col space-y-2"
               href={`/blog/tech/${post.slug}`}
             >
@@ -176,7 +145,9 @@ export default function BlogListClient({
                     <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-gray-900/5 dark:ring-white/5" />
                     <Image
                       alt={'Hamster1963'}
-                      className="rounded-xl object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100"
+                      className={isLoaded
+                        ? 'rounded-xl object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100 opacity-100 blur-0'
+                        : 'rounded-xl object-cover opacity-0 blur-lg'}
                       src={post.metadata.image}
                       width={
                         placeholderImageBlogMap.get(post.slug).metadata.width
@@ -200,7 +171,7 @@ export default function BlogListClient({
             </Link>
           )
         })}
-      </section>
+      </div>
 
       {visibleBlogs < restBlogs.length && (
         <div ref={observerTarget} className="mt-8 flex justify-center">
