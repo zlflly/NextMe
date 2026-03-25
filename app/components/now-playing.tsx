@@ -85,6 +85,7 @@ function NowPlaying({ favoriteSong, latestPostDate }: { favoriteSong: { title: s
               height={50}
               className="h-12 w-12 rounded-[3px] object-cover"
               alt={favoriteSong.title}
+              onError={(e) => { e.currentTarget.src = '/place.webp' }}
             />
           </div>
           <div className="flex flex-col justify-between py-1">
