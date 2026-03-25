@@ -56,8 +56,25 @@ function CustomLink(props) {
 async function CenterImage(props: { src: string; alt: string }) {
   const { src, alt } = props
 
+  // HTTP 图片：提取主色调作为占位背景
   if (src.startsWith('http')) {
-    return <BlogImage src={src} alt={alt} />
+    const preImage = await getPlaceholderBlogImage(src)
+    return (
+      <>
+        <BlogImage
+          src={src}
+          alt={alt}
+          width={preImage.metadata?.width || 1920}
+          height={preImage.metadata?.height || 1080}
+          hex={preImage.placeholder.hex}
+        />
+        {alt.startsWith('alt:') && (
+          <p className="-mb-0 mt-2 text-center text-[13px] text-neutral-400 dark:text-neutral-600">
+            {alt.replace('alt:', '')}
+          </p>
+        )}
+      </>
+    )
   }
 
   const imagePath = src.replaceAll('%20', ' ')
@@ -65,14 +82,16 @@ async function CenterImage(props: { src: string; alt: string }) {
   const isDev = process.env.NODE_ENV === 'development'
 
   if (isDev) {
+    // 开发环境：提取主色调
+    const preImage = await getPlaceholderBlogImage(imagePath)
     return (
       <>
         <BlogImage
           src={imagePath}
           alt={alt}
-          width={1920}
-          height={1080}
-          hex={'ffffff'}
+          width={preImage.metadata?.width || 1920}
+          height={preImage.metadata?.height || 1080}
+          hex={preImage.placeholder.hex}
         />
         {alt.startsWith('alt:') && (
           <p className="-mb-0 mt-2 text-center text-[13px] text-neutral-400 dark:text-neutral-600">

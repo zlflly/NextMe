@@ -25,7 +25,6 @@
  */
 
 import Link from 'next/link'
-import BlogImage from '../../components/blog-image'
 import { notFound } from 'next/navigation'
 import { CustomMDX } from '../../components/mdx'
 import { getBlogPosts } from '../../db/blog'
@@ -94,8 +93,11 @@ export default async function BlogContent({ slug }) {
       </div>
       <div className="flex w-full flex-col">
         {post.metadata.image && (
-          <div className="z-20 overflow-hidden rounded-xl">
-            <BlogImage
+          <div
+            className="z-20 overflow-hidden rounded-xl"
+            style={{ backgroundColor: placeholderImage.placeholder.hex }}
+          >
+            <img
               src={post.metadata.image}
               alt={post.metadata.title}
               width={
@@ -108,7 +110,7 @@ export default async function BlogContent({ slug }) {
                   ? placeholderImage.metadata.height
                   : 1080
               }
-              hex={placeholderImage.placeholder.hex}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           </div>
         )}
