@@ -105,8 +105,8 @@ export default function BlogListClient({
                 <Image
                   alt={firstBlog.metadata.title}
                   className={loadedImages.includes(firstBlog.slug)
-                    ? 'relative rounded-xl object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100 opacity-100 blur-0'
-                    : 'relative rounded-xl object-cover opacity-0 blur-lg'}
+                    ? 'relative rounded-xl object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100 opacity-100'
+                    : 'relative rounded-xl object-cover opacity-0'}
                   src={firstBlog.metadata.image}
                   width={
                     placeholderImageBlogMap.get(firstBlog.slug).metadata.width
