@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import NowPlayingInit from './now-playing'
 
 type LastfmTrack = {
@@ -30,40 +30,42 @@ async function getItunesArtwork(title: string, artist: string) {
 export default function LastfmWidget({ latestPostDate }: { latestPostDate: string }) {
   const [lastfmTrack, setLastfmTrack] = useState<LastfmTrack>(null)
 
-  useEffect(() => {
-    async function fetchTrack() {
-      const apiKey = process.env.NEXT_PUBLIC_LASTFM_API_KEY
-      const username = process.env.NEXT_PUBLIC_LASTFM_USERNAME
+  const fetchTrack = useCallback(async () => {
+    const apiKey = process.env.NEXT_PUBLIC_LASTFM_API_KEY
+    const username = process.env.NEXT_PUBLIC_LASTFM_USERNAME
 
-      if (!apiKey || !username) return
+    if (!apiKey || !username) return
 
-      try {
-        const res = await fetch(
-          `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${username}&api_key=${apiKey}&format=json&limit=1`
-        )
-        if (!res.ok) return
-        const data = await res.json()
-        const track = data.recenttracks?.track?.[0]
-        if (!track) return
+    try {
+      const res = await fetch(
+        `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${username}&api_key=${apiKey}&format=json&limit=1`
+      )
+      if (!res.ok) return
+      const data = await res.json()
+      const track = data.recenttracks?.track?.[0]
+      if (!track) return
 
-        const title = track.name
-        const artist = track.artist?.['#text'] || track.artist
-        const lastfmArt = track.image?.[3]?.['#text'] || track.image?.[2]?.['#text'] || null
-        const albumArt = lastfmArt || (await getItunesArtwork(title, artist)) || null
+      const title = track.name
+      const artist = track.artist?.['#text'] || track.artist
+      const lastfmArt = track.image?.[3]?.['#text'] || track.image?.[2]?.['#text'] || null
+      const albumArt = lastfmArt || (await getItunesArtwork(title, artist)) || null
 
-        setLastfmTrack({
-          title,
-          artist,
-          albumArt,
-          dateUts: track.date?.uts ? Number(track.date.uts) : Math.floor(Date.now() / 1000),
-        })
-      } catch {
-        // silently fail
-      }
+      setLastfmTrack({
+        title,
+        artist,
+        albumArt,
+        dateUts: track.date?.uts ? Number(track.date.uts) : Math.floor(Date.now() / 1000),
+      })
+    } catch {
+      // silently fail
     }
-
-    fetchTrack()
   }, [])
+
+  useEffect(() => {
+    fetchTrack()
+    const interval = setInterval(fetchTrack, 30000)
+    return () => clearInterval(interval)
+  }, [fetchTrack])
 
   return <NowPlayingInit latestPostDate={latestPostDate} lastfmTrack={lastfmTrack} />
 }

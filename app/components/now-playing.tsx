@@ -48,7 +48,7 @@ export default function NowPlayingInit({ latestPostDate, lastfmTrack }: { latest
 
   return (
     <div style={{ position: 'relative', minHeight: '100px' }}>
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         <motion.div
           key="nowPlaying"
           style={{
@@ -73,12 +73,20 @@ export default function NowPlayingInit({ latestPostDate, lastfmTrack }: { latest
 
 function NowPlaying({ favoriteSong, latestPostDate }: { favoriteSong: { title: string; artist: string; albumArt: string; dateUts: number | null }; latestPostDate: string }) {
   const timeAgo = favoriteSong.dateUts ? getTimeAgo(favoriteSong.dateUts) : null
+  const trackKey = `${favoriteSong.title}-${favoriteSong.artist}`
 
   return (
     <div className="flex flex-col gap-y-1 rounded-[10px] bg-neutral-200/40 p-1 dark:bg-neutral-700/50">
       <div className="relative flex w-full rounded-md border-[0.5px] border-neutral-200 bg-white/80 p-2 shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-none dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-none">
         <div className="flex gap-x-2">
-          <div className="relative h-12 w-12 rounded-[3px] bg-neutral-200 dark:bg-neutral-800">
+          <motion.div
+            key={`art-${trackKey}`}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.3 }}
+            className="relative h-12 w-12 rounded-[3px] bg-neutral-200 dark:bg-neutral-800"
+          >
             <img
               src={favoriteSong.albumArt}
               width={50}
@@ -87,17 +95,33 @@ function NowPlaying({ favoriteSong, latestPostDate }: { favoriteSong: { title: s
               alt={favoriteSong.title}
               onError={(e) => { e.currentTarget.src = '/place.webp' }}
             />
-          </div>
+          </motion.div>
           <div className="flex flex-col justify-between py-1">
-            <div className="flex items-center gap-1.5 text-sm font-medium">
+            <motion.div
+              key={`title-${trackKey}`}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.3 }}
+              className="flex items-center gap-1.5 text-sm font-medium"
+            >
               {favoriteSong.title}
               {timeAgo && (
                 <span className={`rounded-sm bg-neutral-100 px-1 py-0 text-[10px] font-normal dark:bg-neutral-800 ${timeAgo.isNow ? 'text-green-500 dark:text-green-400' : 'text-neutral-500 dark:text-neutral-500'}`}>
                   {timeAgo.label}
                 </span>
               )}
-            </div>
-            <div className="text-xs opacity-30">{favoriteSong.artist}</div>
+            </motion.div>
+            <motion.div
+              key={`artist-${trackKey}`}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.3 }}
+              className="text-xs opacity-30"
+            >
+              {favoriteSong.artist}
+            </motion.div>
           </div>
         </div>
         <div className="absolute bottom-2 right-2 flex flex-col justify-end">
