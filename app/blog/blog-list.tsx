@@ -19,7 +19,11 @@ export default async function BlogList() {
   for (const post of allBlogs) {
     let placeholderImage: { src: string; placeholder: any; metadata?: any } = {
       src: '',
-      placeholder: { hex: '#ffffff' },
+      placeholder: {
+        hex: '#ffffff',
+        blurDataURL:
+          'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mOsa2yqBwAFCAICLICSyQAAAABJRU5ErkJggg==',
+      },
       metadata: { width: 800, height: 450 },
     }
     if (post?.metadata.image) {

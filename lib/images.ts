@@ -91,12 +91,20 @@ export async function getPlaceholderColorFromLocal(
 ) {
   try {
     const originalBuffer = await getFileBufferLocal(filepath)
+    const resizedBuffer = await sharp(originalBuffer).resize(5).toBuffer()
     const { metadata, color } = await getPlaiceholder(originalBuffer)
+    const adjustedColor = adjustDarkColor(color)
     return {
       slug: slug,
       src: filepath,
       metadata: metadata,
-      placeholder: adjustDarkColor(color),
+      placeholder: {
+        r: adjustedColor.r,
+        g: adjustedColor.g,
+        b: adjustedColor.b,
+        hex: adjustedColor.hex,
+        blurDataURL: bufferToBase64(resizedBuffer),
+      },
     }
   } catch {
     return {
@@ -107,6 +115,8 @@ export async function getPlaceholderColorFromLocal(
         g: 255,
         b: 255,
         hex: '#ffffff',
+        blurDataURL:
+          'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mOsa2yqBwAFCAICLICSyQAAAABJRU5ErkJggg==',
       },
     }
   }

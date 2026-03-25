@@ -75,6 +75,16 @@ export default function BlogListClient({
     return () => clearTimeout(timeoutId)
   }, [visibleBlogs, restBlogs, loadedImages])
 
+  // Initialize firstBlog in loadedImages after a short delay
+  useEffect(() => {
+    if (firstBlog && !loadedImages.includes(firstBlog.slug)) {
+      const timer = setTimeout(() => {
+        setLoadedImages((prev) => [...prev, firstBlog.slug])
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [firstBlog, loadedImages])
+
   return (
     <section className={'mt-3'}>
       {firstBlog && (
@@ -92,9 +102,11 @@ export default function BlogListClient({
                     .placeholder.hex,
                 }}
               >
-                <img
+                <Image
                   alt={firstBlog.metadata.title}
-                  className="relative rounded-xl object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100"
+                  className={loadedImages.includes(firstBlog.slug)
+                    ? 'relative rounded-xl object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100 opacity-100 blur-0'
+                    : 'relative rounded-xl object-cover opacity-0 blur-lg'}
                   src={firstBlog.metadata.image}
                   width={
                     placeholderImageBlogMap.get(firstBlog.slug).metadata.width
