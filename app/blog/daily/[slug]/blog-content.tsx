@@ -86,7 +86,7 @@ export default async function DailyContent({ slug }) {
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
           {formatDate(post.metadata.publishedAt)}
         </p>
-        <ViewCounter path={`/blog/daily/${slug}`} />
+        <ViewCounter path={`/blog/daily/${slug}`} variant="minimal" />
       </div>
       <div className="flex w-full flex-col">
         {post.metadata.image && (

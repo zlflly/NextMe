@@ -1,26 +1,31 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 
 interface ViewCounterProps {
   path: string
-  variant?: 'plain' | 'pill'
+  variant?: 'plain' | 'pill' | 'minimal'
 }
 
-function EyeIcon({ className }: { className?: string }) {
+function CoffeeBeanIcon({ className }: { className?: string }) {
   return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
+    <span className="relative inline-block h-3 w-3">
+      <Image
+        src="/coffee-bean.svg"
+        alt=""
+        width={12}
+        height={12}
+        className={`${className} dark:hidden`}
+      />
+      <Image
+        src="/coffee-bean-dark.svg"
+        alt=""
+        width={12}
+        height={12}
+        className={`${className} hidden dark:block`}
+      />
+    </span>
   )
 }
 
@@ -36,6 +41,7 @@ function formatViews(n: number): string {
 
 export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps) {
   const [views, setViews] = useState<number | null>(null)
+  const [displayViews, setDisplayViews] = useState<number | null>(null)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -48,7 +54,14 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
       .then((res) => res.json())
       .then((data) => {
         if (data.views !== undefined) {
-          setViews(data.views)
+          const realViews = data.views
+          setViews(realViews)
+          // 先显示历史数字（不包含当前访客）
+          setDisplayViews(realViews - 1)
+          // 延迟后切换到真实数字
+          setTimeout(() => {
+            setDisplayViews(realViews)
+          }, 800)
         }
       })
       .catch((err) => {
@@ -62,6 +75,8 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
     }
   }, [path])
 
+  const showReal = displayViews !== null && views !== null && displayViews === views
+
   if (variant === 'plain') {
     return (
       <span
@@ -69,7 +84,38 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
           mounted ? 'opacity-100' : 'opacity-0'
         }`}
       >
-        {views !== null ? formatViews(views) : '—'}
+        {displayViews !== null ? (
+          <span
+            className={`inline-block transition-all duration-300 ${
+              showReal ? 'opacity-100 scale-100' : 'opacity-80 scale-95'
+            }`}
+          >
+            {formatViews(displayViews)}
+          </span>
+        ) : null}
+      </span>
+    )
+  }
+
+  if (variant === 'minimal') {
+    return (
+      <span
+        className={`inline-flex items-center gap-1.5 text-xs font-medium tabular-nums transition-all duration-500 ${
+          mounted ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        <CoffeeBeanIcon className="h-3 w-3" />
+        <span className="tabular-nums">
+          {displayViews !== null ? (
+            <span
+              className={`inline-block transition-all duration-300 ${
+                showReal ? 'opacity-100 scale-100' : 'opacity-80 scale-95'
+              }`}
+            >
+              {formatViews(displayViews)}
+            </span>
+          ) : null}
+        </span>
       </span>
     )
   }
@@ -77,16 +123,24 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
   return (
     <span
       className={`
-        inline-flex items-center gap-1 rounded-full border border-neutral-200/60
+        inline-flex items-center gap-2 rounded-full border border-neutral-200/60
         bg-neutral-50/60 px-2.5 py-0.5 text-xs
         text-neutral-500 dark:border-neutral-700/50 dark:bg-neutral-800/30 dark:text-neutral-400
         transition-all duration-500
         ${mounted ? 'opacity-100' : 'opacity-0'}
       `}
     >
-      <EyeIcon className="h-3 w-3" />
+      <CoffeeBeanIcon className="h-3 w-3" />
       <span className="font-medium tabular-nums">
-        {views !== null ? formatViews(views) : '—'}
+        {displayViews !== null ? (
+          <span
+            className={`inline-block transition-all duration-300 ${
+              showReal ? 'opacity-100 scale-100' : 'opacity-80 scale-95'
+            }`}
+          >
+            {formatViews(displayViews)}
+          </span>
+        ) : null}
       </span>
     </span>
   )

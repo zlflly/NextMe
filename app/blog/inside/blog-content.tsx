@@ -92,7 +92,7 @@ export default async function BlogContent({ slug }) {
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
           {formatDate(post.metadata.publishedAt)}
         </p>
-        <ViewCounter path={`/blog/inside/${slug}`} />
+        <ViewCounter path={`/blog/inside/${slug}`} variant="minimal" />
       </div>
       <div className="flex w-full flex-col">
         {post.metadata.image && (

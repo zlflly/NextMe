@@ -95,7 +95,7 @@ export default async function BlogContent({ slug }) {
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
           {formatDate(post.metadata.publishedAt)}
         </p>
-        <ViewCounter path={`/blog/tech/${slug}`} />
+        <ViewCounter path={`/blog/tech/${slug}`} variant="minimal" />
       </div>
       {post.metadata.ai && <AI ai={post.metadata.ai} />}
       <div className="flex w-full flex-col">

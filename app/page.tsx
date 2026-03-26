@@ -61,7 +61,11 @@ export default async function Page() {
           <SubscribeButton />
           <p className="mx-2 text-xs font-medium text-neutral-400">/</p>
           <span className="text-xs font-medium">
-            <span className="mr-0.5">views</span>
+            <span className="relative mr-1.5 inline-block h-3 w-3 align-text-bottom">
+              <Image src="/coffee-bean.svg" alt="" width={12} height={12} className="dark:hidden" />
+              <Image src="/coffee-bean-dark.svg" alt="" width={12} height={12} className="hidden dark:block" />
+            </span>
+            <span className="mr-2">views</span>
             <span className="tabular-nums">
               <ViewCounter path="/" variant="plain" />
             </span>
