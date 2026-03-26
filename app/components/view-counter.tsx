@@ -55,13 +55,30 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
       .then((data) => {
         if (data.views !== undefined) {
           const realViews = data.views
+          const startViews = realViews - 1
           setViews(realViews)
-          // 先显示历史数字（不包含当前访客）
-          setDisplayViews(realViews - 1)
-          // 延迟后切换到真实数字
+          setDisplayViews(startViews)
+
+          // 数字滚动动画
+          const duration = 500
+          const startTime = performance.now()
+
+          const animate = (currentTime: number) => {
+            const elapsed = currentTime - startTime
+            const progress = Math.min(elapsed / duration, 1)
+            // ease-out 缓动
+            const eased = 1 - Math.pow(1 - progress, 3)
+            const current = Math.round(startViews + (realViews - startViews) * eased)
+            setDisplayViews(current)
+
+            if (progress < 1) {
+              requestAnimationFrame(animate)
+            }
+          }
+
           setTimeout(() => {
-            setDisplayViews(realViews)
-          }, 800)
+            requestAnimationFrame(animate)
+          }, 300)
         }
       })
       .catch((err) => {
@@ -75,8 +92,6 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
     }
   }, [path])
 
-  const showReal = displayViews !== null && views !== null && displayViews === views
-
   if (variant === 'plain') {
     return (
       <span
@@ -84,15 +99,7 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
           mounted ? 'opacity-100' : 'opacity-0'
         }`}
       >
-        {displayViews !== null ? (
-          <span
-            className={`inline-block transition-all duration-300 ${
-              showReal ? 'opacity-100 scale-100' : 'opacity-80 scale-95'
-            }`}
-          >
-            {formatViews(displayViews)}
-          </span>
-        ) : null}
+        {displayViews !== null ? formatViews(displayViews) : null}
       </span>
     )
   }
@@ -106,15 +113,7 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
       >
         <CoffeeBeanIcon className="h-3 w-3" />
         <span className="tabular-nums">
-          {displayViews !== null ? (
-            <span
-              className={`inline-block transition-all duration-300 ${
-                showReal ? 'opacity-100 scale-100' : 'opacity-80 scale-95'
-              }`}
-            >
-              {formatViews(displayViews)}
-            </span>
-          ) : null}
+          {displayViews !== null ? formatViews(displayViews) : null}
         </span>
       </span>
     )
@@ -132,15 +131,7 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
     >
       <CoffeeBeanIcon className="h-3 w-3" />
       <span className="font-medium tabular-nums">
-        {displayViews !== null ? (
-          <span
-            className={`inline-block transition-all duration-300 ${
-              showReal ? 'opacity-100 scale-100' : 'opacity-80 scale-95'
-            }`}
-          >
-            {formatViews(displayViews)}
-          </span>
-        ) : null}
+        {displayViews !== null ? formatViews(displayViews) : null}
       </span>
     </span>
   )
