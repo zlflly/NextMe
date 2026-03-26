@@ -284,12 +284,16 @@ table {
   position: relative;
   display: inline-block;
   height: 1em;
+  width: 0.7em;
+  text-align: center;
   overflow: hidden;
 }
 
 .rolling-digit .digit {
-  display: inline-block;
-  transition: transform 0.35s ease-out;
+  display: block;
+  transition: transform 0.7s ease-out;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 
 .rolling-digit .roll-out {
