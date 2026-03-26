@@ -1,0 +1,52 @@
+---
+title: '为博客添加无服务器的访问统计'
+publishedAt: '2026-03-26'
+summary: '利用 Cloudflare KV 和 Pages Functions 实现纯前端访问统计，数据完全自主，速度极快。'
+category: 'Tech'
+---
+想给来过的小伙伴留个记号！
+
+## 方案
+
+Cloudflare KV 存访问数字，前端页面加载时调用 API 将数字 +1。
+
+Cloudflare Pages 自带 Functions（类似于 Cloudflare Workers），可以用来写接口。前端用 `fetch` 调用 API 获取数字，通过 `useEffect` 在客户端渲染。
+
+## 实现
+
+### API
+
+```javascript
+export async function onRequest(context) {
+  const url = new URL(context.request.url)
+  const path = url.searchParams.get('path')
+
+  const kv = context.env.PAGE_VIEWS
+  const key = `view:${path}`
+
+  const currentValue = await kv.get(key)
+  const newValue = currentValue ? parseInt(currentValue, 10) + 1 : 1
+
+  await kv.put(key, newValue.toString())
+
+  return new Response(JSON.stringify({ views: newValue }), {
+    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+  })
+}
+```
+
+### 前端组件
+
+React 组件在 `useEffect` 里发起请求，拿到数字后更新状态。为了避免加载闪烁，我加了 mounted 状态控制透明度过渡。
+
+## 配置
+
+需要在 Cloudflare 控制台创建 KV 命名空间，绑定到 Pages 项目。名字叫 `PAGE_VIEWS`，在 Pages 的`设置 → 函数 → KV 命名空间`里绑定即可。
+
+## 效果
+
+现在每篇文章底部都有一个眼睛图标的阅读统计。首页则在 Subscribe 按钮旁边显示。
+
+纯前端实现，数据在自己的 KV 里，响应速度快，也没有第三方追踪。
+
+效果不错！
