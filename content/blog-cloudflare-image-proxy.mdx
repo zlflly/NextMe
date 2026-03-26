@@ -148,7 +148,7 @@ async fetch(request: Request): Promise<Response> {
 async fetch(request) {
 ```
 
-### 第二个坑：Workers 路由没配
+### 第二个坑：Workers 路由没配对
 
 部署完代码后测试，返回 **HTTP 522**：
 
@@ -157,7 +157,7 @@ curl -I "https://image.zlflly.asia/?url=https://example.com/image.jpg"
 # HTTP/1.1 522
 ```
 
-一开始以为是 Worker 出站连接有问题，路由必须带 `/*` 后缀，表示拦截该子域名下所有请求。
+路由必须带 `/*` 后缀，表示拦截该子域名下所有请求。
 
 | 路由                  | Worker               |
 | --------------------- | -------------------- |

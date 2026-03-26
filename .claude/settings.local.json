@@ -4,7 +4,9 @@
       "Bash(git show:*)",
       "Bash(bun:*)",
       "Bash(bunx:*)",
-      "WebSearch"
+      "WebSearch",
+      "WebFetch(domain:image.zlflly.asia)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d[''''results''''][0][''''artworkUrl100''''].replace\\(''''100x100'''',''''600x600''''\\)\\)\")"
     ]
   }
 }

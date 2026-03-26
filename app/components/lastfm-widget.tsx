@@ -29,6 +29,7 @@ async function getItunesArtwork(title: string, artist: string) {
 
 export default function LastfmWidget({ latestPostDate }: { latestPostDate: string }) {
   const [lastfmTrack, setLastfmTrack] = useState<LastfmTrack>(null)
+  const [retryDelay, setRetryDelay] = useState(0)
 
   const fetchTrack = useCallback(async () => {
     const apiKey = process.env.NEXT_PUBLIC_LASTFM_API_KEY
@@ -40,10 +41,20 @@ export default function LastfmWidget({ latestPostDate }: { latestPostDate: strin
       const res = await fetch(
         `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${username}&api_key=${apiKey}&format=json&limit=1`
       )
+
+      // 遇到速率限制，采用指数退避
+      if (res.status === 429) {
+        setRetryDelay((prev) => Math.min(prev === 0 ? 4000 : prev * 2, 60000))
+        return
+      }
+
       if (!res.ok) return
       const data = await res.json()
       const track = data.recenttracks?.track?.[0]
       if (!track) return
+
+      // 成功后重置退避间隔
+      setRetryDelay(0)
 
       const title = track.name
       const artist = track.artist?.['#text'] || track.artist
@@ -63,9 +74,9 @@ export default function LastfmWidget({ latestPostDate }: { latestPostDate: strin
 
   useEffect(() => {
     fetchTrack()
-    const interval = setInterval(fetchTrack, 10000)
+    const interval = setInterval(fetchTrack, retryDelay > 0 ? retryDelay : 2000)
     return () => clearInterval(interval)
-  }, [fetchTrack])
+  }, [fetchTrack, retryDelay])
 
   return <NowPlayingInit latestPostDate={latestPostDate} lastfmTrack={lastfmTrack} />
 }
