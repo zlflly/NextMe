@@ -43,6 +43,7 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
   const [views, setViews] = useState<number | null>(null)
   const [displayViews, setDisplayViews] = useState<number | null>(null)
   const [mounted, setMounted] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -55,30 +56,36 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
       .then((data) => {
         if (data.views !== undefined) {
           const realViews = data.views
-          const startViews = realViews - 1
+          // 确保起始值至少为 0
+          const startViews = Math.max(0, realViews - 1)
           setViews(realViews)
           setDisplayViews(startViews)
 
-          // 数字滚动动画
-          const duration = 500
-          const startTime = performance.now()
+          // 延迟后开始数字滚动动画，等 hydration 完全结束
+          const timer = setTimeout(() => {
+            setIsAnimating(true)
+            const duration = 500
+            const startTime = performance.now()
 
-          const animate = (currentTime: number) => {
-            const elapsed = currentTime - startTime
-            const progress = Math.min(elapsed / duration, 1)
-            // ease-out 缓动
-            const eased = 1 - Math.pow(1 - progress, 3)
-            const current = Math.round(startViews + (realViews - startViews) * eased)
-            setDisplayViews(current)
+            const animate = (currentTime: number) => {
+              const elapsed = currentTime - startTime
+              const progress = Math.min(elapsed / duration, 1)
+              // ease-out 缓动
+              const eased = 1 - Math.pow(1 - progress, 3)
+              const current = Math.round(startViews + (realViews - startViews) * eased)
+              setDisplayViews(current)
 
-            if (progress < 1) {
-              requestAnimationFrame(animate)
+              if (progress < 1) {
+                requestAnimationFrame(animate)
+              } else {
+                setIsAnimating(false)
+              }
             }
-          }
 
-          setTimeout(() => {
             requestAnimationFrame(animate)
           }, 300)
+
+          return () => clearTimeout(timer)
         }
       })
       .catch((err) => {
@@ -92,14 +99,18 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
     }
   }, [path])
 
+  // 初始状态（server 和 client hydration 时匹配）
+  const initialContent = mounted && displayViews !== null ? formatViews(displayViews) : null
+
   if (variant === 'plain') {
     return (
       <span
+        suppressHydrationWarning
         className={`text-xs font-medium tabular-nums transition-all duration-500 ${
           mounted ? 'opacity-100' : 'opacity-0'
         }`}
       >
-        {displayViews !== null ? formatViews(displayViews) : null}
+        {initialContent}
       </span>
     )
   }
@@ -107,20 +118,20 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
   if (variant === 'minimal') {
     return (
       <span
+        suppressHydrationWarning
         className={`inline-flex items-center gap-1.5 text-xs font-medium tabular-nums transition-all duration-500 ${
           mounted ? 'opacity-100' : 'opacity-0'
         }`}
       >
         <CoffeeBeanIcon className="h-3 w-3" />
-        <span className="tabular-nums">
-          {displayViews !== null ? formatViews(displayViews) : null}
-        </span>
+        <span className="tabular-nums">{initialContent}</span>
       </span>
     )
   }
 
   return (
     <span
+      suppressHydrationWarning
       className={`
         inline-flex items-center gap-2 rounded-full border border-neutral-200/60
         bg-neutral-50/60 px-2.5 py-0.5 text-xs
@@ -130,9 +141,7 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
       `}
     >
       <CoffeeBeanIcon className="h-3 w-3" />
-      <span className="font-medium tabular-nums">
-        {displayViews !== null ? formatViews(displayViews) : null}
-      </span>
+      <span className="font-medium tabular-nums">{initialContent}</span>
     </span>
   )
 }
