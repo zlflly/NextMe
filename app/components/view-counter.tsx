@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 
 interface ViewCounterProps {
@@ -39,11 +39,42 @@ function formatViews(n: number): string {
   return n.toString()
 }
 
+interface RollingDigitProps {
+  oldDigit: string
+  newDigit: string
+  animating: boolean
+}
+
+function RollingDigit({ oldDigit, newDigit, animating }: RollingDigitProps) {
+  return (
+    <span className="rolling-digit">
+      <span className={`digit ${animating ? 'roll-out' : ''}`}>{oldDigit}</span>
+      <span className={`digit ${animating ? 'roll-in' : ''}`}>{newDigit}</span>
+    </span>
+  )
+}
+
+function RollingNumber({ value, animating }: { value: string; animating: boolean }) {
+  const digits = value.split('')
+  return (
+    <span className="rolling-number">
+      {digits.map((digit, i) => (
+        <RollingDigit
+          key={i}
+          oldDigit={digits[i] || '0'}
+          newDigit={digit}
+          animating={animating}
+        />
+      ))}
+    </span>
+  )
+}
+
 export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps) {
   const [displayViews, setDisplayViews] = useState<number | null>(null)
+  const [prevViews, setPrevViews] = useState<number | null>(null)
   const [mounted, setMounted] = useState(false)
-  const [animClass, setAnimClass] = useState('')
-  const numRef = useRef<HTMLSpanElement>(null)
+  const [isAnimating, setIsAnimating] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -57,11 +88,11 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
         if (data.views !== undefined) {
           const realViews = data.views
           const startViews = Math.max(0, realViews - 1)
+          setPrevViews(startViews)
           setDisplayViews(startViews)
 
-          // 延迟后开始滚动动画
+          // 延迟后开始数字滚动
           setTimeout(() => {
-            setAnimClass('view-animating')
             const duration = 400
             const steps = 20
             const stepDuration = duration / steps
@@ -70,16 +101,17 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
             const interval = setInterval(() => {
               currentStep++
               const progress = currentStep / steps
-              // ease-out 缓动
               const eased = 1 - Math.pow(1 - progress, 3)
               const current = Math.round(startViews + (realViews - startViews) * eased)
               setDisplayViews(current)
 
               if (currentStep >= steps) {
                 clearInterval(interval)
-                setAnimClass('view-anim-done')
+                setIsAnimating(false)
               }
             }, stepDuration)
+
+            setIsAnimating(true)
           }, 500)
         }
       })
@@ -95,6 +127,7 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
   }, [path])
 
   const content = mounted && displayViews !== null ? formatViews(displayViews) : null
+  const prevContent = mounted && prevViews !== null ? formatViews(prevViews) : null
 
   if (variant === 'plain') {
     return (
@@ -104,9 +137,7 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
           mounted ? 'opacity-100' : 'opacity-0'
         }`}
       >
-        <span ref={numRef} className={`view-counter-num ${animClass}`}>
-          {content}
-        </span>
+        {isAnimating ? <RollingNumber value={content!} animating={isAnimating} /> : content}
       </span>
     )
   }
@@ -121,9 +152,7 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
       >
         <CoffeeBeanIcon className="h-3 w-3" />
         <span className="tabular-nums">
-          <span ref={numRef} className={`view-counter-num ${animClass}`}>
-            {content}
-          </span>
+          {isAnimating ? <RollingNumber value={content!} animating={isAnimating} /> : content}
         </span>
       </span>
     )
@@ -142,9 +171,7 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
     >
       <CoffeeBeanIcon className="h-3 w-3" />
       <span className="font-medium tabular-nums">
-        <span ref={numRef} className={`view-counter-num ${animClass}`}>
-          {content}
-        </span>
+        {isAnimating ? <RollingNumber value={content!} animating={isAnimating} /> : content}
       </span>
     </span>
   )
