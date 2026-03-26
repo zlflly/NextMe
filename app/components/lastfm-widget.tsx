@@ -63,7 +63,7 @@ export default function LastfmWidget({ latestPostDate }: { latestPostDate: strin
 
   useEffect(() => {
     fetchTrack()
-    const interval = setInterval(fetchTrack, 30000)
+    const interval = setInterval(fetchTrack, 10000)
     return () => clearInterval(interval)
   }, [fetchTrack])
 

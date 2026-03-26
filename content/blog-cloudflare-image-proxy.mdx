@@ -1,0 +1,248 @@
+---
+title: '使用 Cloudflare Workers 搭建图片反向代理'
+publishedAt: '2026-03-26'
+summary: '解决博客加载外网图片超时失败的问题。通过 Cloudflare Workers 搭建图片代理服务，配合前端 URL 编码改造，实现稳定的中转访问。记录排查 522 错误的全过程。'
+category: 'Tech'
+---
+
+## 需求
+
+博客首页的音乐播放器需要显示专辑封面图，数据来源于 iTunes API。由于网络环境限制，浏览器直接加载外网图片链接会超时失败。
+
+解决方案是使用 Cloudflare Workers 搭建一个图片反向代理服务。
+
+## 方案
+
+- 自己的域名
+
+  > ### 为什么必须用自己的域名
+  >
+  > Cloudflare Workers 默认分配的域名是 `*.workers.dev`（例如 `img.1120241057.workers.dev`），这个域名在**大陆是被完全屏蔽的**，国内用户根本访问不了。
+  >
+  > 所以即使 Worker 部署成功，国内访客也无法访问这个中转节点。
+  >
+  > 解决方案就是给自己的 Worker 绑定一个自有域名。由于域名 `zlflly.asia` 本身托管在 Cloudflare（NS 服务商为 Cloudflare），它的 DNS 解析也由 Cloudflare 接管，这样 `image.zlflly.asia` 这个子域名国内可以正常访问。
+  >
+
+- 用 Cloudflare Workers 充当图片中转站
+
+```
+国内用户 → image.zlflly.asia（可达）→ Worker → iTunes（海外可达）→ 图片返回
+```
+
+用户请求经过 Worker，Worker 在云端代替浏览器请求目标图片，加上 CORS 头后返回给前端。
+
+## Workers 脚本
+
+当访问 `https://image.zlflly.asia/?url=https://xxx.com/image.jpg` 时，Worker 内部做了这样几件事：
+
+  1. **提取参数**：从 URL 的 `?url=` 参数中拿到原始图片地址
+  2. **校验 URL**：确保参数是一个合法的 URL 格式，防止恶意构造请求
+  3. **发起请求**：用 `fetch()` 在云端向原始图片地址发起请求
+  4. **添加 CORS 头**：把原始图片的二进制数据连同 `Access-Control-Allow-Origin: *` 响应头一起返回给浏览器
+  5. **错误处理**：如果 URL 参数缺失、格式错误、或抓取失败，都返回明确的 HTTP 错误状态码
+
+  这样一来，浏览器拿到的是来自 `image.zlflly.asia` 的数据（国内可达），而实际的图片抓取工作在 Cloudflare 海外节点完成（无网络限制）。
+
+```javascript
+export default {
+  async fetch(request) {
+
+    // 处理 OPTIONS 预检请求
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS',
+          'Access-Control-Allow-Headers': '*',
+          'Access-Control-Max-Age': '86400',
+        }
+      });
+    }
+
+    const url = new URL(request.url);
+    const imageUrl = url.searchParams.get('url');
+
+    // 1. 错误处理：没有传入 url 参数
+    if (!imageUrl) {
+      return new Response(
+        JSON.stringify({ error: 'Missing "url" query parameter' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // 2. 验证 URL 格式
+    try {
+      new URL(imageUrl);
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Invalid URL format' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    try {
+      // 3. 发起代理请求
+      const imageResponse = await fetch(imageUrl, {
+        headers: {
+          'User-Agent': 'Cloudflare-ImageProxy/1.0',
+          ...Object.fromEntries(
+            ['Accept', 'Accept-Language', 'Referer', 'Origin']
+              .filter(h => request.headers.has(h))
+              .map(h => [h, request.headers.get(h)])
+          )
+        }
+      });
+
+      // 4. 错误处理：抓取原始图片失败
+      if (!imageResponse.ok) {
+        return new Response(
+          JSON.stringify({ error: `Failed to fetch: ${imageResponse.status}` }),
+          { status: 502, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // 5. 获取图片 Content-Type 并构建响应
+      const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+
+      // 关键：添加 CORS 头
+      const response = new Response(imageResponse.body, {
+        status: 200,
+        headers: {
+          'Content-Type': contentType,
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+          'Cache-Control': 'public, max-age=86400, s-maxage=604800',
+        },
+      });
+
+      return response;
+
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return new Response(
+        JSON.stringify({ error: `Proxy error: ${message}` }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+  }
+};
+```
+
+## 踩坑记录
+
+### 第一个坑：TypeScript 语法报错
+
+cloudfare现在不支持在网页端从hello world开始创建work的时候修改代码了，只能先部署好之后编辑代码。结果网页端不支持 TypeScript，**只支持纯 JavaScript**
+
+```typescript
+// 这种会报错
+async fetch(request: Request): Promise<Response> {
+```
+
+会得到 `SyntaxError: Unexpected token ':'`。需要去掉所有类型声明：
+
+```javascript
+// 正确写法
+async fetch(request) {
+```
+
+### 第二个坑：Workers 路由没配
+
+部署完代码后测试，返回 **HTTP 522**：
+
+```
+curl -I "https://image.zlflly.asia/?url=https://example.com/image.jpg"
+# HTTP/1.1 522
+```
+
+一开始以为是 Worker 出站连接有问题，路由必须带 `/*` 后缀，表示拦截该子域名下所有请求。
+
+| 路由                  | Worker               |
+| --------------------- | -------------------- |
+| `image.zlflly.asia/*` | 选择你的 Worker 名称 |
+
+配好 Workers 路由后，522 就消失了。
+
+## 部署步骤
+
+### 1. 配置 DNS 解析
+
+在 Cloudflare DNS 设置中添加一条 A 记录：
+
+```
+类型: A
+名称: image
+内容: 192.0.2.1
+代理状态: 已代理
+```
+
+`192.0.2.1` 是官方推荐的占位 IP，开启代理后 Cloudflare 会在流量到达前拦截并交给 Worker 处理。
+
+### 2. 绑定 Workers 路由
+
+在 Cloudflare 控制台进入 **Workers 路由**，添加：
+
+```
+路由: image.zlflly.asia/*  // 请把路由换成你实际的路由
+Worker: 选择你刚部署的脚本名称
+```
+
+> 注意：路由末尾必须加 `/*`，否则无法匹配带参数的请求。
+
+### 3. 验证是否生效
+
+```bash
+# 根路径应返回错误 JSON
+curl "https://image.zlflly.asia/"
+# {"error":"Missing \"url\" query parameter"}
+
+# 带参数应返回图片
+curl -I "https://image.zlflly.asia/?url=https://via.placeholder.com/100"
+# HTTP/1.1 200 OK
+# Access-Control-Allow-Origin: *
+```
+
+## 前端改造
+
+添加一个工具函数，负责将原始图片 URL 进行安全的 URL 编码后与代理地址拼接：
+
+```tsx
+function getProxyImageUrl(coverUrl: string | null): string {
+  if (!coverUrl) return '/place.webp'
+  const proxyBase = process.env.NEXT_PUBLIC_IMAGE_PROXY_URL
+  if (!proxyBase) return coverUrl  // 没有配置代理时降级
+  return `${proxyBase}${encodeURIComponent(coverUrl)}`
+}
+```
+
+在图片加载处使用：
+
+```tsx
+<img
+  src={getProxyImageUrl(favoriteSong.albumArt)}
+  width={50}
+  height={50}
+  className="h-12 w-12 rounded-[3px] object-cover"
+  alt={favoriteSong.title}
+  onError={(e) => { e.currentTarget.src = '/place.webp' }}
+/>
+```
+
+环境变量配置：
+
+```bash
+NEXT_PUBLIC_IMAGE_PROXY_URL="https://image.zlflly.asia/?url="
+```
+
+记得在 Cloudflare Pages 的环境变量设置中也添加同样的值。
+
+## 总结
+
+核心要点：
+
+1. **Workers 路由必须配置** — 光有 DNS 记录不够，必须在 Workers 路由中绑定才能生效
+2. **CORS 头是必须的** — `Access-Control-Allow-Origin: *` 否则浏览器依然会拦截
+3. **URL 必须编码** — 使用 `encodeURIComponent()` 避免链接中的特殊字符破坏参数解析
+4. **错误处理要完善** — 缺少参数、目标失败、网络错误等都需要对应的 HTTP 状态码

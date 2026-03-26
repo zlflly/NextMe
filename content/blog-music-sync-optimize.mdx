@@ -1,0 +1,45 @@
+---
+title: '优化音乐播放器的图片预加载'
+publishedAt: '2026-03-26'
+summary: '通过预加载封面图解决了歌曲切换时文字先出、图片后出的问题。记录调整思路和实现方法。'
+category: 'Tech'
+---
+
+## 问题
+
+之前的实现里，歌曲切换时文字总是比图片先出来——因为图片要走代理多一次网络请求，而文字是瞬时的。
+
+## 思路
+
+既然网络请求时间差无法避免，就换一个思路：**先加载图片，图片好了再触发动画**。
+
+之前是：轮询检测到新歌曲 → 直接更新状态 → 动画触发（此时图片还在加载中）
+
+现在改为：轮询检测到新歌曲 → 预加载图片 → 图片好了再更新状态、触发动画 → 文字图片一起出来
+
+## 实现
+
+```tsx
+useEffect(() => {
+  if (!lastfmTrack) return
+
+  const img = new Image()
+  img.src = getProxyImageUrl(lastfmTrack.albumArt)
+
+  img.onload = () => {
+    setDisplayedTrack(lastfmTrack)  // 图片好了才触发动画
+  }
+
+  img.onerror = () => {
+    setDisplayedTrack(lastfmTrack)  // 加载失败也切换，避免卡住
+  }
+
+  if (!displayedTrack) {
+    setDisplayedTrack(lastfmTrack)  // 首次直接显示
+  }
+}, [lastfmTrack])
+```
+
+用原生 `Image` 对象预加载，不需要挂到 DOM 上，也不会有额外的网络请求。
+
+另外把轮询间隔从 30 秒改成了 10 秒，更快响应歌曲变化。

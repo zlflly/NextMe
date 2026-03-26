@@ -158,8 +158,8 @@ export default function BlogListClient({
                     <Image
                       alt={'Hamster1963'}
                       className={isLoaded
-                        ? 'rounded-xl object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100 opacity-100 blur-0'
-                        : 'rounded-xl object-cover opacity-0 blur-lg'}
+                        ? 'rounded-xl object-cover transition-all duration-500 ease-linear dark:brightness-75 dark:hover:brightness-100 opacity-100'
+                        : 'rounded-xl object-cover opacity-0'}
                       src={post.metadata.image}
                       width={
                         placeholderImageBlogMap.get(post.slug).metadata.width

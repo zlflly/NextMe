@@ -38,11 +38,31 @@ function getTimeAgo(uts: number) {
 }
 
 export default function NowPlayingInit({ latestPostDate, lastfmTrack }: { latestPostDate: string; lastfmTrack: { title: string; artist: string; albumArt: string; dateUts: number | null } | null }) {
-  const [isLoaded, setIsLoaded] = useState(false)
+  const [displayedTrack, setDisplayedTrack] = useState(lastfmTrack)
+  const [isImageReady, setIsImageReady] = useState(false)
 
   useEffect(() => {
-    if (lastfmTrack !== null) {
-      setIsLoaded(true)
+    if (!lastfmTrack) return
+
+    // 新歌曲来了，先显示旧数据（如果有的话），开始预加载新图片
+    const img = new Image()
+    img.src = getProxyImageUrl(lastfmTrack.albumArt)
+
+    img.onload = () => {
+      setIsImageReady(true)
+      setDisplayedTrack(lastfmTrack)
+    }
+
+    img.onerror = () => {
+      // 图片加载失败也切换，避免卡住
+      setIsImageReady(true)
+      setDisplayedTrack(lastfmTrack)
+    }
+
+    // 如果没有正在显示的内容（首次加载），直接显示
+    if (!displayedTrack) {
+      setIsImageReady(true)
+      setDisplayedTrack(lastfmTrack)
     }
   }, [lastfmTrack])
 
@@ -50,7 +70,7 @@ export default function NowPlayingInit({ latestPostDate, lastfmTrack }: { latest
     <div style={{ position: 'relative', minHeight: '100px' }}>
       <AnimatePresence mode="wait">
         <motion.div
-          key="nowPlaying"
+          key={displayedTrack ? `${displayedTrack.title}-${displayedTrack.artist}` : 'loading'}
           style={{
             position: 'absolute',
             width: '100%',
@@ -60,8 +80,8 @@ export default function NowPlayingInit({ latestPostDate, lastfmTrack }: { latest
           animate={{ opacity: 1 }}
           exit={{ opacity: 1 }}
         >
-          {isLoaded && lastfmTrack ? (
-            <NowPlaying favoriteSong={lastfmTrack} latestPostDate={latestPostDate} />
+          {displayedTrack ? (
+            <NowPlaying favoriteSong={displayedTrack} latestPostDate={latestPostDate} />
           ) : (
             <NowPlayingLoading />
           )}
@@ -69,6 +89,13 @@ export default function NowPlayingInit({ latestPostDate, lastfmTrack }: { latest
       </AnimatePresence>
     </div>
   )
+}
+
+function getProxyImageUrl(coverUrl: string | null): string {
+  if (!coverUrl) return '/place.webp'
+  const proxyBase = process.env.NEXT_PUBLIC_IMAGE_PROXY_URL
+  if (!proxyBase) return coverUrl
+  return `${proxyBase}${encodeURIComponent(coverUrl)}`
 }
 
 function NowPlaying({ favoriteSong, latestPostDate }: { favoriteSong: { title: string; artist: string; albumArt: string; dateUts: number | null }; latestPostDate: string }) {
@@ -88,7 +115,7 @@ function NowPlaying({ favoriteSong, latestPostDate }: { favoriteSong: { title: s
             className="relative h-12 w-12 rounded-[3px] bg-neutral-200 dark:bg-neutral-800"
           >
             <img
-              src={favoriteSong.albumArt}
+              src={getProxyImageUrl(favoriteSong.albumArt)}
               width={50}
               height={50}
               className="h-12 w-12 rounded-[3px] object-cover"
