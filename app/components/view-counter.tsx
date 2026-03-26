@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Image from 'next/image'
 
 interface ViewCounterProps {
@@ -40,10 +40,10 @@ function formatViews(n: number): string {
 }
 
 export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps) {
-  const [views, setViews] = useState<number | null>(null)
   const [displayViews, setDisplayViews] = useState<number | null>(null)
   const [mounted, setMounted] = useState(false)
-  const [isAnimating, setIsAnimating] = useState(false)
+  const [animClass, setAnimClass] = useState('')
+  const numRef = useRef<HTMLSpanElement>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -56,36 +56,31 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
       .then((data) => {
         if (data.views !== undefined) {
           const realViews = data.views
-          // 确保起始值至少为 0
           const startViews = Math.max(0, realViews - 1)
-          setViews(realViews)
           setDisplayViews(startViews)
 
-          // 延迟后开始数字滚动动画，等 hydration 完全结束
-          const timer = setTimeout(() => {
-            setIsAnimating(true)
-            const duration = 500
-            const startTime = performance.now()
+          // 延迟后开始滚动动画
+          setTimeout(() => {
+            setAnimClass('view-animating')
+            const duration = 400
+            const steps = 20
+            const stepDuration = duration / steps
+            let currentStep = 0
 
-            const animate = (currentTime: number) => {
-              const elapsed = currentTime - startTime
-              const progress = Math.min(elapsed / duration, 1)
+            const interval = setInterval(() => {
+              currentStep++
+              const progress = currentStep / steps
               // ease-out 缓动
               const eased = 1 - Math.pow(1 - progress, 3)
               const current = Math.round(startViews + (realViews - startViews) * eased)
               setDisplayViews(current)
 
-              if (progress < 1) {
-                requestAnimationFrame(animate)
-              } else {
-                setIsAnimating(false)
+              if (currentStep >= steps) {
+                clearInterval(interval)
+                setAnimClass('view-anim-done')
               }
-            }
-
-            requestAnimationFrame(animate)
-          }, 300)
-
-          return () => clearTimeout(timer)
+            }, stepDuration)
+          }, 500)
         }
       })
       .catch((err) => {
@@ -99,8 +94,7 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
     }
   }, [path])
 
-  // 初始状态（server 和 client hydration 时匹配）
-  const initialContent = mounted && displayViews !== null ? formatViews(displayViews) : null
+  const content = mounted && displayViews !== null ? formatViews(displayViews) : null
 
   if (variant === 'plain') {
     return (
@@ -110,7 +104,9 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
           mounted ? 'opacity-100' : 'opacity-0'
         }`}
       >
-        {initialContent}
+        <span ref={numRef} className={`view-counter-num ${animClass}`}>
+          {content}
+        </span>
       </span>
     )
   }
@@ -124,7 +120,11 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
         }`}
       >
         <CoffeeBeanIcon className="h-3 w-3" />
-        <span className="tabular-nums">{initialContent}</span>
+        <span className="tabular-nums">
+          <span ref={numRef} className={`view-counter-num ${animClass}`}>
+            {content}
+          </span>
+        </span>
       </span>
     )
   }
@@ -141,7 +141,11 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
       `}
     >
       <CoffeeBeanIcon className="h-3 w-3" />
-      <span className="font-medium tabular-nums">{initialContent}</span>
+      <span className="font-medium tabular-nums">
+        <span ref={numRef} className={`view-counter-num ${animClass}`}>
+          {content}
+        </span>
+      </span>
     </span>
   )
 }

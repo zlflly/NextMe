@@ -275,3 +275,31 @@ table {
     0 4px 6px -1px rgba(0, 0, 0, 0.1),
     0 2px 4px -1px rgba(0, 0, 0, 0.2);
 }
+
+.view-counter-num {
+  display: inline-block;
+  transition: transform 0.15s ease-out, opacity 0.15s ease-out;
+}
+
+.view-animating {
+  animation: view-counter-pop 0.4s ease-out;
+}
+
+.view-anim-done {
+  animation: none;
+}
+
+@keyframes view-counter-pop {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
