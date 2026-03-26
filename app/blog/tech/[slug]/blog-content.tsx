@@ -7,6 +7,7 @@ import { getPlaceholderColorFromLocal } from '../../../../lib/images'
 import TOC from './toc'
 import { BackIcon } from '../../../components/Icon'
 import BlurImage from '../../../components/blog-image'
+import ViewCounter from '../../../components/view-counter'
 
 interface Heading {
   level: number
@@ -90,10 +91,11 @@ export default async function BlogContent({ slug }) {
           {post.metadata.title}
         </Link>
       </h1>
-      <div className="mb-8 mt-2 flex max-w-[650px] items-center justify-between text-sm">
+      <div className="mb-8 mt-2 flex max-w-[650px] items-center gap-3 text-sm">
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
           {formatDate(post.metadata.publishedAt)}
         </p>
+        <ViewCounter path={`/blog/tech/${slug}`} />
       </div>
       {post.metadata.ai && <AI ai={post.metadata.ai} />}
       <div className="flex w-full flex-col">

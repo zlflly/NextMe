@@ -4,6 +4,7 @@ import Image from 'next/image'
 // import PocTwo from 'public/work/poc/2.webp'
 // import PocThree from 'public/work/poc/3.webp'
 import { BackIcon } from '../../../components/Icon'
+import ViewCounter from '../../../components/view-counter'
 
 export default function Page() {
   return (
@@ -15,9 +16,12 @@ export default function Page() {
             {/* Project Title */}
           </Link>
         </h1>
-        <p className="prose prose-neutral mb-6 text-sm dark:prose-invert">
+        <p className="prose prose-neutral mb-2 text-sm dark:prose-invert">
           {/* Project subtitle */}
         </p>
+        <div className="mb-6">
+          <ViewCounter path="/work/poc" />
+        </div>
         {/* Project description */}
         {/* <blockquote className="my-6 border-l-2 pl-2 text-sm">
           <a href="" target={'_blank'}>

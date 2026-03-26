@@ -3,6 +3,7 @@ import Link from 'next/link'
 // import ChatOne from 'public/work/chat/chatOne.webp'
 // import ChatTwo from 'public/work/chat/chatTwo.webp'
 import { BackIcon } from '../../../components/Icon'
+import ViewCounter from '../../../components/view-counter'
 
 export default function Page() {
   return (
@@ -14,9 +15,12 @@ export default function Page() {
             {/* Project Title */}
           </Link>
         </h1>
-        <p className="prose prose-neutral mb-6 text-sm dark:prose-invert">
+        <p className="prose prose-neutral mb-2 text-sm dark:prose-invert">
           {/* Project subtitle */}
         </p>
+        <div className="mb-6">
+          <ViewCounter path="/work/chat" />
+        </div>
         {/* Project description */}
         {/* <blockquote className="my-6 border-l-2 pl-2 text-sm">
           <a href="" target={'_blank'}>

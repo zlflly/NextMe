@@ -5,6 +5,7 @@ import Link from 'next/link'
 // import homedashThree from 'public/work/homedash/3.webp'
 // import homedashFour from 'public/work/homedash/4.webp'
 import { BackIcon } from '../../../components/Icon'
+import ViewCounter from '../../../components/view-counter'
 
 export default function Page() {
   return (
@@ -16,9 +17,12 @@ export default function Page() {
             {/* Project Title */}
           </Link>
         </h1>
-        <p className="prose prose-neutral mb-6 text-sm dark:prose-invert">
+        <p className="prose prose-neutral mb-2 text-sm dark:prose-invert">
           {/* Project subtitle */}
         </p>
+        <div className="mb-6">
+          <ViewCounter path="/work/homedash" />
+        </div>
         {/* Project description */}
         {/* <blockquote className="my-6 border-l-2 pl-2 text-sm">
           <a href="" target={'_blank'}>

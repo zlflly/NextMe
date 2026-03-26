@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { BackIcon } from '../../../components/Icon'
+import ViewCounter from '../../../components/view-counter'
 
 export default function Page() {
   return (
@@ -12,10 +13,13 @@ export default function Page() {
             集信屋
           </Link>
         </h1>
-        <p className="prose prose-neutral mb-6 text-sm dark:prose-invert">
+        <p className="prose prose-neutral mb-2 text-sm dark:prose-invert">
           H&W Letter.
         </p>
         <p>Write letters.</p>
+        <div className="mt-2">
+          <ViewCounter path="/work/letter" />
+        </div>
         <blockquote className="my-6 border-l-2 pl-2 text-sm">
           <div className="blur-md">https://letter.buycoffee.top</div>
         </blockquote>

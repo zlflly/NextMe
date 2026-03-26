@@ -31,6 +31,7 @@ import { getBlogPosts } from '../../db/blog'
 import { getPlaceholderColorFromLocal } from '../../../lib/images'
 import { BackIcon } from '../../components/Icon'
 import BlurImage from '../../components/blog-image'
+import ViewCounter from '../../components/view-counter'
 
 export default async function BlogContent({ slug }) {
   const getPost = getBlogPosts()
@@ -87,10 +88,11 @@ export default async function BlogContent({ slug }) {
           {post.metadata.title}
         </Link>
       </h1>
-      <div className="mb-8 mt-2 flex max-w-[650px] items-center justify-between text-sm">
+      <div className="mb-8 mt-2 flex max-w-[650px] items-center gap-3 text-sm">
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
           {formatDate(post.metadata.publishedAt)}
         </p>
+        <ViewCounter path={`/blog/inside/${slug}`} />
       </div>
       <div className="flex w-full flex-col">
         {post.metadata.image && (

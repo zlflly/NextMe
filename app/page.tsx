@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { GitHubIcon } from './components/Icon'
 import LastfmWidget from './components/lastfm-widget'
 import SubscribeButton from './components/subscribe-button'
+import ViewCounter from './components/view-counter'
 import { getBlogPosts } from './db/blog'
 
 export default async function Page() {
@@ -58,14 +59,13 @@ export default async function Page() {
             </button>
           </Link>
           <SubscribeButton />
-          {/* <p className="mx-1 text-xs font-medium">/</p>
-          <Link
-            href={'https://changelog.buycoffee.top'}
-            target="_blank"
-            className="text-xs font-medium"
-          >
-            Changelog
-          </Link> */}
+          <p className="mx-2 text-xs font-medium text-neutral-400">/</p>
+          <span className="text-xs font-medium">
+            <span className="mr-0.5">views</span>
+            <span className="tabular-nums">
+              <ViewCounter path="/" variant="plain" />
+            </span>
+          </span>
         </div>
       </section>
       <Photos />
