@@ -46,22 +46,35 @@ interface RollingDigitProps {
 }
 
 function RollingDigit({ oldDigit, newDigit, animating }: RollingDigitProps) {
+  const isChanged = oldDigit !== newDigit
   return (
     <span className="rolling-digit">
-      <span className={`digit ${animating ? 'roll-out' : ''}`}>{oldDigit}</span>
-      <span className={`digit ${animating ? 'roll-in' : ''}`}>{newDigit}</span>
+      <span className={`digit ${animating && isChanged ? 'roll-out' : ''}`}>{oldDigit}</span>
+      <span className={`digit ${animating && isChanged ? 'roll-in' : ''}`}>{newDigit}</span>
     </span>
   )
 }
 
-function RollingNumber({ value, animating }: { value: string; animating: boolean }) {
-  const digits = value.split('')
+function RollingNumber({
+  oldValue,
+  newValue,
+  animating,
+}: {
+  oldValue: string
+  newValue: string
+  animating: boolean
+}) {
+  // 补齐到相同长度
+  const maxLen = Math.max(oldValue.length, newValue.length)
+  const oldPadded = oldValue.padStart(maxLen, ' ')
+  const newPadded = newValue.padStart(maxLen, ' ')
+
   return (
     <span className="rolling-number">
-      {digits.map((digit, i) => (
+      {newPadded.split('').map((digit, i) => (
         <RollingDigit
           key={i}
-          oldDigit={digits[i] || '0'}
+          oldDigit={oldPadded[i] || ' '}
           newDigit={digit}
           animating={animating}
         />
@@ -137,7 +150,11 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
           mounted ? 'opacity-100' : 'opacity-0'
         }`}
       >
-        {isAnimating ? <RollingNumber value={content!} animating={isAnimating} /> : content}
+        {isAnimating && prevContent ? (
+          <RollingNumber oldValue={prevContent} newValue={content!} animating={isAnimating} />
+        ) : (
+          content
+        )}
       </span>
     )
   }
@@ -152,7 +169,11 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
       >
         <CoffeeBeanIcon className="h-3 w-3" />
         <span className="tabular-nums">
-          {isAnimating ? <RollingNumber value={content!} animating={isAnimating} /> : content}
+          {isAnimating && prevContent ? (
+            <RollingNumber oldValue={prevContent} newValue={content!} animating={isAnimating} />
+          ) : (
+            content
+          )}
         </span>
       </span>
     )
@@ -171,7 +192,11 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
     >
       <CoffeeBeanIcon className="h-3 w-3" />
       <span className="font-medium tabular-nums">
-        {isAnimating ? <RollingNumber value={content!} animating={isAnimating} /> : content}
+        {isAnimating && prevContent ? (
+          <RollingNumber oldValue={prevContent} newValue={content!} animating={isAnimating} />
+        ) : (
+          content
+        )}
       </span>
     </span>
   )
