@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface ViewCounterProps {
   path: string
@@ -42,7 +43,7 @@ function formatViews(n: number): string {
 export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps) {
   const [displayViews, setDisplayViews] = useState<number | null>(null)
   const [mounted, setMounted] = useState(false)
-  const [fading, setFading] = useState(false)
+  const [showAnimation, setShowAnimation] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -57,13 +58,17 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
           const realViews = data.views
           const startViews = Math.max(0, realViews - 1)
           setDisplayViews(startViews)
+
+          // 延迟后开始数字切换动画
           setTimeout(() => {
-            setFading(true)
+            setDisplayViews(realViews)
+            setShowAnimation(true)
+
+            // 动画结束后停止
             setTimeout(() => {
-              setDisplayViews(realViews)
-              setFading(false)
-            }, 500)
-          }, 1000)
+              setShowAnimation(false)
+            }, 400)
+          }, 1500)
         }
       })
       .catch((err) => {
@@ -83,11 +88,26 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
     return (
       <span
         suppressHydrationWarning
-        className={`text-xs font-medium tabular-nums transition-opacity duration-500 ${
+        className={`text-xs font-medium tabular-nums ${
           mounted ? 'opacity-100' : 'opacity-0'
-        } ${fading ? 'opacity-0' : 'opacity-100'}`}
+        }`}
       >
-        {content}
+        {showAnimation ? (
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={content}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.4, ease: [0.215, 0.61, 0.355, 1] }}
+              className="inline-block"
+            >
+              {content}
+            </motion.span>
+          </AnimatePresence>
+        ) : (
+          <span className="inline-block">{content}</span>
+        )}
       </span>
     )
   }
@@ -96,12 +116,27 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
     return (
       <span
         suppressHydrationWarning
-        className={`inline-flex items-center gap-1.5 text-xs font-medium tabular-nums transition-opacity duration-500 ${
+        className={`inline-flex items-center gap-1.5 text-xs font-medium tabular-nums ${
           mounted ? 'opacity-100' : 'opacity-0'
-        } ${fading ? 'opacity-0' : 'opacity-100'}`}
+        }`}
       >
         <CoffeeBeanIcon className="h-3 w-3" />
-        <span className="tabular-nums">{content}</span>
+        {showAnimation ? (
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={content}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.4, ease: [0.215, 0.61, 0.355, 1] }}
+              className="tabular-nums"
+            >
+              {content}
+            </motion.span>
+          </AnimatePresence>
+        ) : (
+          <span className="tabular-nums">{content}</span>
+        )}
       </span>
     )
   }
@@ -113,13 +148,26 @@ export default function ViewCounter({ path, variant = 'pill' }: ViewCounterProps
         inline-flex items-center gap-2 rounded-full border border-neutral-200/60
         bg-neutral-50/60 px-2.5 py-0.5 text-xs
         text-neutral-500 dark:border-neutral-700/50 dark:bg-neutral-800/30 dark:text-neutral-400
-        transition-opacity duration-500
         ${mounted ? 'opacity-100' : 'opacity-0'}
-        ${fading ? 'opacity-0' : 'opacity-100'}
       `}
     >
       <CoffeeBeanIcon className="h-3 w-3" />
-      <span className="font-medium tabular-nums">{content}</span>
+      {showAnimation ? (
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={content}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.4, ease: [0.215, 0.61, 0.355, 1] }}
+            className="font-medium tabular-nums"
+          >
+            {content}
+          </motion.span>
+        </AnimatePresence>
+      ) : (
+        <span className="font-medium tabular-nums">{content}</span>
+      )}
     </span>
   )
 }

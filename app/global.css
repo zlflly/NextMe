@@ -276,25 +276,3 @@ table {
     0 2px 4px -1px rgba(0, 0, 0, 0.2);
 }
 
-.rolling-number {
-  display: inline-flex;
-}
-
-.rolling-digit-wrapper {
-  position: relative;
-  display: inline-block;
-  width: 0.65em;
-  height: 1em;
-  overflow: hidden;
-}
-
-.rolling-digit-old,
-.rolling-digit-new,
-.digit-static {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-  display: block;
-}
