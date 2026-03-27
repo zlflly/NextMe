@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface ViewCounterProps {
   path: string
@@ -47,10 +48,31 @@ interface RollingDigitProps {
 
 function RollingDigit({ oldDigit, newDigit, animating }: RollingDigitProps) {
   const isChanged = oldDigit !== newDigit
+
+  if (!animating || !isChanged) {
+    return <span className="digit-static">{newDigit}</span>
+  }
+
   return (
-    <span className="rolling-digit">
-      <span className={`digit ${animating && isChanged ? 'roll-out' : ''}`}>{oldDigit}</span>
-      <span className={`digit ${animating && isChanged ? 'roll-in' : ''}`}>{newDigit}</span>
+    <span className="rolling-digit-wrapper">
+      {/* 旧数字向上滚出 */}
+      <motion.span
+        className="digit rolling-digit-old"
+        initial={{ y: 0, opacity: 1 }}
+        animate={{ y: -16, opacity: 0 }}
+        transition={{ duration: 0.7, ease: [0.215, 0.61, 0.355, 1] }}
+      >
+        {oldDigit}
+      </motion.span>
+      {/* 新数字从下滚入 */}
+      <motion.span
+        className="digit rolling-digit-new"
+        initial={{ y: 16, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.7, ease: [0.215, 0.61, 0.355, 1] }}
+      >
+        {newDigit}
+      </motion.span>
     </span>
   )
 }
@@ -64,7 +86,6 @@ function RollingNumber({
   newValue: string
   animating: boolean
 }) {
-  // 补齐到相同长度
   const maxLen = Math.max(oldValue.length, newValue.length)
   const oldPadded = oldValue.padStart(maxLen, ' ')
   const newPadded = newValue.padStart(maxLen, ' ')

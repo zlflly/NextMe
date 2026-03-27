@@ -280,48 +280,21 @@ table {
   display: inline-flex;
 }
 
-.rolling-digit {
+.rolling-digit-wrapper {
   position: relative;
   display: inline-block;
+  width: 0.65em;
   height: 1em;
-  width: 0.7em;
-  text-align: center;
   overflow: hidden;
 }
 
-.rolling-digit .digit {
-  display: block;
-  transition: transform 0.7s ease-out;
-  font-variant-numeric: tabular-nums;
+.rolling-digit-old,
+.rolling-digit-new,
+.digit-static {
+  position: absolute;
+  left: 0;
+  width: 100%;
   text-align: center;
-}
-
-.rolling-digit .roll-out {
-  animation: roll-out 0.7s ease-out forwards;
-}
-
-.rolling-digit .roll-in {
-  animation: roll-in 0.7s ease-out forwards;
-}
-
-@keyframes roll-out {
-  0% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-}
-
-@keyframes roll-in {
-  0% {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  font-variant-numeric: tabular-nums;
+  display: block;
 }
