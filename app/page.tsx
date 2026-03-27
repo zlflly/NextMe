@@ -10,6 +10,7 @@ import LastfmWidget from './components/lastfm-widget'
 import SubscribeButton from './components/subscribe-button'
 import ViewCounter from './components/view-counter'
 import { getBlogPosts } from './db/blog'
+import RainbowSpotlight from './components/rainbow-spotlight'
 
 export default async function Page() {
   const blogPosts = getBlogPosts()
@@ -20,8 +21,9 @@ export default async function Page() {
   })
 
   return (
-    <section>
-      <section className="sm:px-28 sm:pt-8">
+    <section className="relative min-h-screen">
+      <RainbowSpotlight />
+      <section className="relative z-10 sm:px-28 sm:pt-8">
         <Image
           alt={'zlflly2005'}
           src={avatar}
@@ -72,7 +74,9 @@ export default async function Page() {
           </span>
         </div>
       </section>
+      <div className = "relative z-10">
       <Photos />
+      </div>
     </section>
   )
 }

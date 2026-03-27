@@ -8,6 +8,10 @@ export default {
     extend: {
       animation: {
         shimmer: 'shimmer 6s infinite',
+        orbit: 'spin 2s linear forwards infinite',
+        orbit2: 'spin 5s linear reverse infinite',
+        orbit3: 'spin 7s linear forwards infinite',
+        orbit4: 'spin 9s linear reverse infinite',
       },
       keyframes: {
         shimmer: {
