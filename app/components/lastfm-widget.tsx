@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import NowPlayingInit from './now-playing'
 
 type LastfmTrack = {
@@ -106,12 +106,16 @@ async function getAlbumArtwork(title: string, artist: string): Promise<string | 
 export default function LastfmWidget({ latestPostDate }: { latestPostDate: string }) {
   const [lastfmTrack, setLastfmTrack] = useState<LastfmTrack>(null)
   const [retryDelay, setRetryDelay] = useState(0)
+  // 用于去重：忽略旧请求的结果，避免竞态导致歌曲跳来跳去
+  const requestIdRef = useRef(0)
 
   const fetchTrack = useCallback(async () => {
     const apiKey = process.env.NEXT_PUBLIC_LASTFM_API_KEY
     const username = process.env.NEXT_PUBLIC_LASTFM_USERNAME
 
     if (!apiKey || !username) return
+
+    const currentRequestId = ++requestIdRef.current
 
     try {
       const res = await fetch(
@@ -136,6 +140,9 @@ export default function LastfmWidget({ latestPostDate }: { latestPostDate: strin
       const artist = track.artist?.['#text'] || track.artist
       // Last.fm 图片 CDN 不稳定（常返回 502），始终通过 iTunes/MusicBrainz 获取更可靠的封面
       const albumArt = await getAlbumArtwork(title, artist)
+
+      // 竞态：只有最新请求的结果才更新状态
+      if (currentRequestId !== requestIdRef.current) return
 
       setLastfmTrack({
         title,
