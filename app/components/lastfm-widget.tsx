@@ -61,7 +61,8 @@ async function getMusicBrainzArtwork(title: string, artist: string) {
 
     // Cover Art Archive 返回 CDN 重定向 URL（archive.org 在国内被墙），直接返回代理后的 URL
     const coverRes = await fetch(`https://coverartarchive.org/release/${releaseId}/front`)
-    if (coverRes.ok && coverRes.url) {
+    // 必须检查状态码，fetch() 对 404 等也返回 ok:true，但图片实际不存在
+    if (coverRes.status === 200 && coverRes.url) {
       const proxyBase = process.env.NEXT_PUBLIC_IMAGE_PROXY_URL
       if (proxyBase) {
         return `${proxyBase}${encodeURIComponent(coverRes.url)}`
