@@ -40,7 +40,7 @@ function extractPrimaryArtist(artist: string) {
   return artist.split(/&|feat\.|ft\.|with|、|,|，|和|\/|\\/i)[0].trim()
 }
 
-// 终极兜底策略：MusicBrainz + Cover Art Archive
+// 终极兜底策略：MusicBrainz + Cover Art Archive（加 3 秒超时，防止 archive.org 阻塞）
 async function getMusicBrainzArtwork(title: string, artist: string) {
   try {
     const query = encodeURIComponent(`recording:"${title}" AND artist:"${artist}"`)
@@ -59,15 +59,24 @@ async function getMusicBrainzArtwork(title: string, artist: string) {
     const releaseId = recording?.releases?.[0]?.id
     if (!releaseId) return null
 
-    // Cover Art Archive 返回 CDN 重定向 URL（archive.org 在国内被墙），直接返回代理后的 URL
-    const coverRes = await fetch(`https://coverartarchive.org/release/${releaseId}/front`)
-    // 必须检查状态码，fetch() 对 404 等也返回 ok:true，但图片实际不存在
-    if (coverRes.status === 200 && coverRes.url) {
-      const proxyBase = process.env.NEXT_PUBLIC_IMAGE_PROXY_URL
-      if (proxyBase) {
-        return `${proxyBase}${encodeURIComponent(coverRes.url)}`
+    // Cover Art Archive 加 3 秒超时，防止 archive.org 阻塞后续请求
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 3000)
+    try {
+      const coverRes = await fetch(
+        `https://coverartarchive.org/release/${releaseId}/front`,
+        { signal: controller.signal }
+      )
+      clearTimeout(timeoutId)
+      if (coverRes.status === 200 && coverRes.url) {
+        const proxyBase = process.env.NEXT_PUBLIC_IMAGE_PROXY_URL
+        if (proxyBase) {
+          return `${proxyBase}${encodeURIComponent(coverRes.url)}`
+        }
+        return coverRes.url
       }
-      return coverRes.url
+    } catch {
+      clearTimeout(timeoutId)
     }
     return null
   } catch {
@@ -75,29 +84,28 @@ async function getMusicBrainzArtwork(title: string, artist: string) {
   }
 }
 
-// 整合后的封面调度中心：Last.fm 自带 -> MusicBrainz(准确) -> iTunes 精确 -> iTunes 清洗 -> MusicBrainz原始
+// 整合后的封面调度中心：iTunes 优先（覆盖广速度快），MusicBrainz 兜底（翻唱/重录版更准）
 async function getAlbumArtwork(title: string, artist: string): Promise<string | null> {
   const clean = cleanTitle(title)
   const primaryArtist = extractPrimaryArtist(artist)
 
-  // 策略 1：MusicBrainz 精确匹配（最准确，用于翻唱/重录版）
-  // 用清洗后的歌名和主歌手，提升命中率
-  let artwork = await getMusicBrainzArtwork(clean || title, primaryArtist || artist)
+  // 策略 1：iTunes 精确匹配（覆盖广，速度快，大多数歌曲在这里就能找到）
+  let artwork = await searchItunes(`${title} ${artist}`)
   if (artwork) return artwork
 
-  // 策略 2：MusicBrainz 原始歌名+原始歌手（兜底更广的范围）
+  // 策略 2：iTunes 清洗匹配（处理 Live版、合唱斜杠等）
   if (clean !== title || primaryArtist !== artist) {
-    artwork = await getMusicBrainzArtwork(title, artist)
+    artwork = await searchItunes(`${clean} ${primaryArtist}`)
     if (artwork) return artwork
   }
 
-  // 策略 3：iTunes 精确匹配（覆盖广，速度快）
-  artwork = await searchItunes(`${title} ${artist}`)
+  // 策略 3：MusicBrainz 精确匹配（用于翻唱/重录版/小众歌曲）
+  artwork = await getMusicBrainzArtwork(clean || title, primaryArtist || artist)
   if (artwork) return artwork
 
-  // 策略 4：iTunes 清洗匹配（处理 Live版、合唱斜杠等）
+  // 策略 4：MusicBrainz 原始歌名+原始歌手（兜底更广的范围）
   if (clean !== title || primaryArtist !== artist) {
-    artwork = await searchItunes(`${clean} ${primaryArtist}`)
+    artwork = await getMusicBrainzArtwork(title, artist)
     if (artwork) return artwork
   }
 
