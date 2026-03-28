@@ -95,6 +95,8 @@ function getProxyImageUrl(coverUrl: string | null): string {
   if (!coverUrl) return '/place.webp'
   const proxyBase = process.env.NEXT_PUBLIC_IMAGE_PROXY_URL
   if (!proxyBase) return coverUrl
+  // 避免双重编码：如果已经是代理 URL 则直接返回
+  if (coverUrl.startsWith(proxyBase)) return coverUrl
   return `${proxyBase}${encodeURIComponent(coverUrl)}`
 }
 
