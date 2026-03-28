@@ -6,15 +6,15 @@ import NowPlayingInit from './now-playing'
 type LastfmTrack = {
   title: string
   artist: string
-  albumArt: string
+  albumArt: string | null
   dateUts: number
 } | null
 
-async function getItunesArtwork(title: string, artist: string) {
+// 抽离基础的 iTunes 查询逻辑
+async function searchItunes(searchTerm: string) {
   try {
-    const term = encodeURIComponent(`${title} ${artist}`)
     const res = await fetch(
-      `https://itunes.apple.com/search?term=${term}&entity=song&limit=1`,
+      `https://itunes.apple.com/search?term=${encodeURIComponent(searchTerm)}&entity=song&limit=1`,
       { cache: 'force-cache' }
     )
     if (!res.ok) return null
@@ -25,6 +25,78 @@ async function getItunesArtwork(title: string, artist: string) {
   } catch {
     return null
   }
+}
+
+// 清洗歌名：去除括号及内部内容（如 (Live版), [Remastered]），去除破折号及后面的内容
+function cleanTitle(title: string) {
+  return title
+    .replace(/[\(（\[【].*?[\)）\]】]/g, '')
+    .replace(/-.*/, '')
+    .trim()
+}
+
+// 提取主歌手：按常见合作连词截断，取第一位
+function extractPrimaryArtist(artist: string) {
+  return artist.split(/&|feat\.|ft\.|with|、|,|，|和|\/|\\/i)[0].trim()
+}
+
+// 终极兜底策略：MusicBrainz + Cover Art Archive
+async function getMusicBrainzArtwork(title: string, artist: string) {
+  try {
+    const query = encodeURIComponent(`recording:"${title}" AND artist:"${artist}"`)
+    const mbRes = await fetch(
+      `https://musicbrainz.org/ws/2/recording?query=${query}&fmt=json&limit=1`,
+      {
+        headers: {
+          'User-Agent': 'NextMe-LastfmWidget/1.0.0 ( https://zlflly.asia/ )'
+        },
+        cache: 'force-cache'
+      }
+    )
+    if (!mbRes.ok) return null
+    const mbData = await mbRes.json()
+    const recording = mbData.recordings?.[0]
+    const releaseId = recording?.releases?.[0]?.id
+    if (!releaseId) return null
+
+    // Cover Art Archive 直接返回 CDN 重定向 URL
+    const coverRes = await fetch(`https://coverartarchive.org/release/${releaseId}/front`)
+    if (coverRes.ok) {
+      return coverRes.url
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+// 整合后的封面调度中心：Last.fm 自带 -> MusicBrainz(准确) -> iTunes 精确 -> iTunes 清洗 -> MusicBrainz原始
+async function getAlbumArtwork(title: string, artist: string): Promise<string | null> {
+  const clean = cleanTitle(title)
+  const primaryArtist = extractPrimaryArtist(artist)
+
+  // 策略 1：MusicBrainz 精确匹配（最准确，用于翻唱/重录版）
+  // 用清洗后的歌名和主歌手，提升命中率
+  let artwork = await getMusicBrainzArtwork(clean || title, primaryArtist || artist)
+  if (artwork) return artwork
+
+  // 策略 2：MusicBrainz 原始歌名+原始歌手（兜底更广的范围）
+  if (clean !== title || primaryArtist !== artist) {
+    artwork = await getMusicBrainzArtwork(title, artist)
+    if (artwork) return artwork
+  }
+
+  // 策略 3：iTunes 精确匹配（覆盖广，速度快）
+  artwork = await searchItunes(`${title} ${artist}`)
+  if (artwork) return artwork
+
+  // 策略 4：iTunes 清洗匹配（处理 Live版、合唱斜杠等）
+  if (clean !== title || primaryArtist !== artist) {
+    artwork = await searchItunes(`${clean} ${primaryArtist}`)
+    if (artwork) return artwork
+  }
+
+  return null
 }
 
 export default function LastfmWidget({ latestPostDate }: { latestPostDate: string }) {
@@ -58,8 +130,8 @@ export default function LastfmWidget({ latestPostDate }: { latestPostDate: strin
 
       const title = track.name
       const artist = track.artist?.['#text'] || track.artist
-      const lastfmArt = track.image?.[3]?.['#text'] || track.image?.[2]?.['#text'] || null
-      const albumArt = lastfmArt || (await getItunesArtwork(title, artist)) || null
+      // Last.fm 图片 CDN 不稳定（常返回 502），始终通过 iTunes/MusicBrainz 获取更可靠的封面
+      const albumArt = await getAlbumArtwork(title, artist)
 
       setLastfmTrack({
         title,

@@ -37,7 +37,7 @@ function getTimeAgo(uts: number) {
   return { label: `${Math.floor(diff / 86400)}d ago`, isNow: false }
 }
 
-export default function NowPlayingInit({ latestPostDate, lastfmTrack }: { latestPostDate: string; lastfmTrack: { title: string; artist: string; albumArt: string; dateUts: number | null } | null }) {
+export default function NowPlayingInit({ latestPostDate, lastfmTrack }: { latestPostDate: string; lastfmTrack: { title: string; artist: string; albumArt: string | null; dateUts: number | null } | null }) {
   const [displayedTrack, setDisplayedTrack] = useState(lastfmTrack)
   const [isImageReady, setIsImageReady] = useState(false)
 
@@ -98,7 +98,7 @@ function getProxyImageUrl(coverUrl: string | null): string {
   return `${proxyBase}${encodeURIComponent(coverUrl)}`
 }
 
-function NowPlaying({ favoriteSong, latestPostDate }: { favoriteSong: { title: string; artist: string; albumArt: string; dateUts: number | null }; latestPostDate: string }) {
+function NowPlaying({ favoriteSong, latestPostDate }: { favoriteSong: { title: string; artist: string; albumArt: string | null; dateUts: number | null }; latestPostDate: string }) {
   const timeAgo = favoriteSong.dateUts ? getTimeAgo(favoriteSong.dateUts) : null
   const trackKey = `${favoriteSong.title}-${favoriteSong.artist}`
 
