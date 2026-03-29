@@ -63,9 +63,14 @@ export default {
 
         // Check if this is a blog owner reply
         if (created_by === 'me' && email === 'me@email.com') {
-          // Find the latest unreplied guest message (is_reply=1, reply_to=0)
+          // Find the latest unreplied guest message (has no reply yet)
           const latestGuest = await env.DB.prepare(
-            'SELECT id FROM guestbook WHERE slug = ? AND is_reply = 1 AND reply_to = 0 ORDER BY created_at DESC LIMIT 1'
+            `SELECT g.id FROM guestbook g
+             WHERE g.slug = ? AND g.is_reply = 1 AND g.reply_to = 0
+             AND NOT EXISTS (
+               SELECT 1 FROM guestbook r WHERE r.reply_to = g.id AND r.is_reply = 2
+             )
+             ORDER BY g.created_at DESC LIMIT 1`
           ).bind(slug).first()
 
           if (!latestGuest) {
