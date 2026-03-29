@@ -4,7 +4,7 @@ export default async function sitemap() {
   let getPost = getBlogPosts()
   getPost = getPost.filter((post) => post.metadata.category !== 'Daily')
   let blogs = getPost.map((post) => ({
-    url: process.env.SITE_URL + `/blog/${post.slug}`,
+    url: process.env.SITE_URL + `/blog/tech/${post.slug}`,
     lastModified: post.metadata.publishedAt,
   }))
 

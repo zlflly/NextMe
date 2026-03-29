@@ -29,7 +29,7 @@ export async function generateMetadata({
       description,
       type: 'article',
       publishedTime,
-      url: process.env.SITE + `/blog/daily/${post!.slug}`,
+      url: process.env.SITE_URL + `/blog/daily/${post!.slug}`,
       images: [
         {
           url: ogImage,
