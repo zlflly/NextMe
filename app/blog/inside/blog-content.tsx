@@ -29,6 +29,7 @@ import { notFound } from 'next/navigation'
 import { CustomMDX } from '../../components/mdx'
 import { getBlogPosts } from '../../db/blog'
 import { getPlaceholderColorFromLocal } from '../../../lib/images'
+import { formatDate } from '../../../lib/dates'
 import { BackIcon } from '../../components/Icon'
 import BlurImage from '../../components/blog-image'
 import ViewCounter from '../../components/view-counter'
@@ -120,18 +121,4 @@ export default async function BlogContent({ slug }) {
       </article>
     </>
   )
-}
-
-function formatDate(date: string) {
-  if (!date.includes('T')) {
-    date = `${date}T00:00:00`
-  }
-
-  let fullDate = new Date(date).toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-
-  return `${fullDate}`
 }
