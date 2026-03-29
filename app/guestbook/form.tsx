@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import TopBlurLayer from 'app/components/top-blur-layer'
 import TopCommitBar from 'app/components/top-commit-bar'
 import { AnimatePresence } from 'framer-motion'
+import { useGuestbook } from './guestbook-context'
 
 export default function Form() {
   const [name, setName] = useState('')
@@ -12,6 +13,7 @@ export default function Form() {
   const [disabled, setDisabled] = useState(false)
   const [loading, setLoading] = useState(false)
   const [unsubmitted, setUnsubmitted] = useState(false)
+  const { isOwner, setIsOwner, selectedReplyId, setSelectedReplyId } = useGuestbook()
 
   useEffect(() => {
     if (name || email || entry) {
@@ -20,6 +22,17 @@ export default function Form() {
       setUnsubmitted(false)
     }
   }, [name, email, entry])
+
+  // Detect owner mode
+  useEffect(() => {
+    if (name === 'me' && email === 'me@email.com') {
+      setIsOwner(true)
+    } else {
+      setIsOwner(false)
+      // Clear selection when leaving owner mode
+      setSelectedReplyId(null)
+    }
+  }, [name, email, setIsOwner, setSelectedReplyId])
 
   const handleSubmit = async () => {
     if (!name || !email || !entry) {
@@ -30,10 +43,15 @@ export default function Form() {
     setLoading(true)
 
     try {
+      const body: Record<string, string> = { body: entry, created_by: name, email }
+      if (isOwner && selectedReplyId) {
+        body.reply_to = String(selectedReplyId)
+      }
+
       const res = await fetch(process.env.NEXT_PUBLIC_GUESTBOOK_API_URL!, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body: entry, created_by: name, email }),
+        body: JSON.stringify(body),
       })
 
       if (!res.ok) throw new Error('Failed to submit')
@@ -42,6 +60,7 @@ export default function Form() {
       setEntry('')
       setName('')
       setUnsubmitted(false)
+      setSelectedReplyId(null)
 
       // Reload page to show new entry
       window.location.reload()
@@ -57,6 +76,7 @@ export default function Form() {
     setEmail('')
     setEntry('')
     setName('')
+    setSelectedReplyId(null)
   }
 
   return (
@@ -106,6 +126,16 @@ export default function Form() {
           onChange={(e) => setEntry(e.target.value)}
           className="mb-4 mt-2 block min-h-[80px] w-full rounded-lg border-neutral-300 bg-neutral-100 py-4 pl-4 pr-32 text-[14px] text-neutral-900 placeholder-neutral-400 outline-none dark:bg-neutral-800 dark:text-neutral-100"
         />
+        {isOwner && !selectedReplyId && (
+          <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">
+            Select a message below to reply to
+          </p>
+        )}
+        {isOwner && selectedReplyId && (
+          <p className="mt-1 text-xs text-blue-500 dark:text-blue-400">
+            Replying to message #{selectedReplyId}
+          </p>
+        )}
       </form>
     </>
   )

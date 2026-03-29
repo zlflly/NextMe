@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { SkeletonBase } from '../components/skeleton-base'
 import { useSearchParams } from 'next/navigation'
+import { useGuestbook } from './guestbook-context'
 
 interface GuestbookEntry {
   id: number
@@ -24,6 +25,7 @@ export default function GuestbookEntries() {
   const [loading, setLoading] = useState(true)
   const searchParams = useSearchParams()
   const showEmails = searchParams.get('key') === 'me'
+  const { isOwner, selectedReplyId, setSelectedReplyId } = useGuestbook()
 
   useEffect(() => {
     const apiUrl = showEmails
@@ -62,28 +64,15 @@ export default function GuestbookEntries() {
 
   const { guestbooks, replies } = entries
 
+  // Filter guestbooks that don't have a reply yet (for owner selection)
+  const unrepliedGuestbooks = guestbooks.filter((g) => {
+    const hasReply = replies.some((r) => r.reply_to === g.id)
+    return !hasReply
+  })
+
   return guestbooks.map((entry, index) => {
     const reply = replies.find((reply) => reply.reply_to === entry.id)
-
-    if (entry.is_banner === 1) {
-      return (
-        <motion.div
-          key={entry.id}
-          initial={{ opacity: 0, filter: 'blur(10px)' }}
-          animate={{ opacity: 1, filter: 'blur(0px)' }}
-          transition={{ duration: 0.5, delay: index * 0.1 }}
-          className="mb-4 flex w-full flex-col items-center"
-        >
-          <a
-            target="_blank"
-            href={entry.banner_url}
-            className="rounded-lg bg-blue-700 px-2 py-1 text-xs font-semibold text-white shadow-lg shadow-blue-700/20 transition-shadow duration-300 hover:shadow-none dark:shadow-none"
-          >
-            {entry.body}
-          </a>
-        </motion.div>
-      )
-    }
+    const isUnreplied = entry.is_reply === 1 && entry.reply_to === 0 && !reply
 
     return (
       <motion.div
@@ -93,14 +82,39 @@ export default function GuestbookEntries() {
         transition={{ duration: 0.5, delay: index * 0.1 }}
         className="mb-4 flex flex-col"
       >
-        <div className="w-full break-words text-sm">
-          <span className="mr-1 text-neutral-600 dark:text-neutral-400">
-            {entry.created_by}:
-          </span>
-          {showEmails && entry.email && (
-            <span className="mr-1 text-xs text-neutral-400">({entry.email})</span>
+        <div className="flex items-start gap-2">
+          {entry.is_banner === 1 ? (
+            <a
+              target="_blank"
+              href={entry.banner_url}
+              className="rounded-lg bg-blue-700 px-2 py-1 text-xs font-semibold text-white shadow-lg shadow-blue-700/20 transition-shadow duration-300 hover:shadow-none dark:shadow-none"
+            >
+              {entry.body}
+            </a>
+          ) : (
+            <>
+              {isOwner && isUnreplied && (
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="reply-target"
+                    checked={selectedReplyId === entry.id}
+                    onChange={() => setSelectedReplyId(entry.id)}
+                    className="h-4 w-4 rounded border-neutral-300 text-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:focus:ring-blue-400"
+                  />
+                </label>
+              )}
+              <div className="flex-1 break-words text-sm">
+                <span className="mr-1 text-neutral-600 dark:text-neutral-400">
+                  {entry.created_by}:
+                </span>
+                {showEmails && entry.email && (
+                  <span className="mr-1 text-xs text-neutral-400">({entry.email})</span>
+                )}
+                {entry.body}
+              </div>
+            </>
           )}
-          {entry.body}
         </div>
         {reply && (
           <motion.div
