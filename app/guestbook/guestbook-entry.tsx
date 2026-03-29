@@ -92,8 +92,7 @@ export default function GuestbookEntries() {
               {entry.body}
             </a>
           ) : (
-            <div className="flex flex-1 items-start gap-2">
-              <div className="flex-1 break-words text-sm">
+              <div className="break-words text-sm">
                 <span className="mr-1 text-neutral-600 dark:text-neutral-400">
                   {entry.created_by}:
                 </span>
@@ -101,24 +100,21 @@ export default function GuestbookEntries() {
                   <span className="mr-1 text-xs text-neutral-400">({entry.email})</span>
                 )}
                 {entry.body}
-              </div>
-              {isOwner && isUnreplied && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedReplyId(selectedReplyId === entry.id ? null : entry.id)}
-                  className={`group relative flex h-6 shrink-0 items-center justify-center rounded-full px-2 text-xs font-medium transition-all duration-200 ${
-                    selectedReplyId === entry.id
-                      ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30'
-                      : 'bg-neutral-200 text-neutral-500 hover:bg-neutral-300 dark:bg-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-600'
-                  }`}
-                  aria-label={selectedReplyId === entry.id ? 'Cancel reply' : 'Select to reply'}
-                >
-                  <span className={`transition-transform duration-200 ${selectedReplyId === entry.id ? 'scale-110' : 'group-hover:-translate-x-0.5'}`}>
+                {isOwner && isUnreplied && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedReplyId(selectedReplyId === entry.id ? null : entry.id)}
+                    className={`ml-2 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-medium transition-all duration-200 ${
+                      selectedReplyId === entry.id
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-neutral-200 text-neutral-500 hover:bg-neutral-300 dark:bg-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-600'
+                    }`}
+                    aria-label={selectedReplyId === entry.id ? 'Cancel reply' : 'Select to reply'}
+                  >
                     ←
-                  </span>
-                </button>
-              )}
-            </div>
+                  </button>
+                )}
+              </div>
           )}
         </div>
         {reply && (

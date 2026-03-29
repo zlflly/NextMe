@@ -126,11 +126,6 @@ export default function Form() {
           onChange={(e) => setEntry(e.target.value)}
           className="mb-4 mt-2 block min-h-[80px] w-full rounded-lg border-neutral-300 bg-neutral-100 py-4 pl-4 pr-32 text-[14px] text-neutral-900 placeholder-neutral-400 outline-none dark:bg-neutral-800 dark:text-neutral-100"
         />
-        {isOwner && selectedReplyId && (
-          <p className="mt-1 text-xs text-blue-500 dark:text-blue-400">
-            Replying to message #{selectedReplyId}
-          </p>
-        )}
       </form>
     </>
   )
