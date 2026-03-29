@@ -38,10 +38,13 @@ export default function NowPlayingStatus({ latestPostDate }: { latestPostDate: s
   }
 
   const getDaysSinceUpdate = (dateString: string) => {
+    // 使用 UTC 日期避免时区问题，确保服务端和客户端计算一致
     const date = new Date(dateString)
     const today = new Date()
-    const diffTime = Math.abs(today.getTime() - date.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    // 转为 UTC 日期字符串再解析，消除时区干扰
+    const dateUTC = new Date(date.toISOString().split('T')[0])
+    const todayUTC = new Date(today.toISOString().split('T')[0])
+    const diffDays = Math.floor((todayUTC.getTime() - dateUTC.getTime()) / 86400000)
     return diffDays
   }
 
@@ -65,7 +68,7 @@ export default function NowPlayingStatus({ latestPostDate }: { latestPostDate: s
       </div>
 
       <div className="mr-1 text-[11px] font-semibold">
-        <span className="text-white">{daysDisplay}d</span> <span className="opacity-30">ago</span>
+        <span className="text-neutral-800 dark:text-neutral-200">{daysDisplay}d</span> <span className="opacity-30">ago</span>
       </div>
     </div>
   )
