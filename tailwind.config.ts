@@ -8,10 +8,10 @@ export default {
     extend: {
       animation: {
         shimmer: 'shimmer 6s infinite',
-        orbit: 'spin 2s linear forwards infinite',
-        orbit2: 'spin 5s linear reverse infinite',
-        orbit3: 'spin 7s linear forwards infinite',
-        orbit4: 'spin 9s linear reverse infinite',
+        orbit: 'orbit 2s linear forwards infinite',
+        orbit2: 'orbit2 5s linear reverse infinite',
+        orbit3: 'orbit3 7s linear forwards infinite',
+        orbit4: 'orbit4 9s linear reverse infinite',
       },
       keyframes: {
         shimmer: {
@@ -21,6 +21,22 @@ export default {
           '30%, 60%': {
             'background-position': 'calc(100% + var(--shimmer-width)) 0',
           },
+        },
+        orbit: {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
+        orbit2: {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
+        orbit3: {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
+        orbit4: {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
         },
       },
       fontFamily: {

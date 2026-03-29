@@ -40,6 +40,7 @@ export default function TOC({ headings }) {
   }, [headings])
 
   useEffect(() => {
+    let rafId: number | null = null
     const updateProgress = () => {
       const scrollTop = window.scrollY
       const docHeight = document.documentElement.scrollHeight - window.innerHeight
@@ -54,9 +55,23 @@ export default function TOC({ headings }) {
       }
     }
 
-    window.addEventListener('scroll', updateProgress, { passive: true })
+    const handleScroll = () => {
+      if (rafId === null) {
+        rafId = requestAnimationFrame(() => {
+          updateProgress()
+          rafId = null
+        })
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
     updateProgress()
-    return () => window.removeEventListener('scroll', updateProgress)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId)
+      }
+    }
   }, [])
 
   return (
