@@ -33,6 +33,7 @@ import { formatDate } from '../../../lib/dates'
 import { BackIcon } from '../../components/Icon'
 import BlurImage from '../../components/blog-image'
 import ViewCounter from '../../components/view-counter'
+import ArticleComments from '../../components/article-comments'
 
 export default async function BlogContent({ slug }) {
   const getPost = getBlogPosts()
@@ -119,6 +120,7 @@ export default async function BlogContent({ slug }) {
       <article className="prose prose-neutral prose-quoteless text-[15px] dark:prose-invert">
         <CustomMDX source={post.content} />
       </article>
+      <ArticleComments slug={slug} />
     </>
   )
 }

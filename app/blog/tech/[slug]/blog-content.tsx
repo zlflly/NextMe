@@ -9,6 +9,7 @@ import TOC from './toc'
 import { BackIcon } from '../../../components/Icon'
 import BlurImage from '../../../components/blog-image'
 import ViewCounter from '../../../components/view-counter'
+import ArticleComments from '../../../components/article-comments'
 
 interface Heading {
   level: number
@@ -128,6 +129,7 @@ export default async function BlogContent({ slug }) {
         <CustomMDX source={post.content} />
       </article>
       <TOC headings={headings} />
+      <ArticleComments slug={slug} />
     </>
   )
 }

@@ -20,7 +20,7 @@ interface GuestbookEntry {
   email?: string
 }
 
-export default function GuestbookEntries() {
+export default function GuestbookEntries({ slug = 'guestbook' }: { slug?: string }) {
   const [entries, setEntries] = useState<{ guestbooks: GuestbookEntry[], replies: GuestbookEntry[] } | null>(null)
   const [loading, setLoading] = useState(true)
   const searchParams = useSearchParams()
@@ -28,9 +28,10 @@ export default function GuestbookEntries() {
   const { isOwner, selectedReplyId, setSelectedReplyId } = useGuestbook()
 
   useEffect(() => {
+    const baseUrl = process.env.NEXT_PUBLIC_GUESTBOOK_API_URL!
     const apiUrl = showEmails
-      ? `${process.env.NEXT_PUBLIC_GUESTBOOK_API_URL}?key=me`
-      : `${process.env.NEXT_PUBLIC_GUESTBOOK_API_URL}`
+      ? `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}key=me&slug=${slug}`
+      : `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}slug=${slug}`
     fetch(apiUrl)
       .then((res) => res.json())
       .then((data) => {

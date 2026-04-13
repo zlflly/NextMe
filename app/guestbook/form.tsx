@@ -6,7 +6,7 @@ import TopCommitBar from 'app/components/top-commit-bar'
 import { AnimatePresence } from 'framer-motion'
 import { useGuestbook } from './guestbook-context'
 
-export default function Form() {
+export default function Form({ slug = 'guestbook' }: { slug?: string }) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [entry, setEntry] = useState('')
@@ -14,6 +14,9 @@ export default function Form() {
   const [loading, setLoading] = useState(false)
   const [unsubmitted, setUnsubmitted] = useState(false)
   const { isOwner, setIsOwner, selectedReplyId, setSelectedReplyId } = useGuestbook()
+
+  const baseUrl = process.env.NEXT_PUBLIC_GUESTBOOK_API_URL!
+  const apiUrl = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}slug=${slug}`
 
   useEffect(() => {
     if (name || email || entry) {
@@ -43,12 +46,12 @@ export default function Form() {
     setLoading(true)
 
     try {
-      const body: Record<string, string> = { body: entry, created_by: name, email }
+      const body: Record<string, string> = { body: entry, created_by: name, email, slug }
       if (isOwner && selectedReplyId) {
         body.reply_to = String(selectedReplyId)
       }
 
-      const res = await fetch(process.env.NEXT_PUBLIC_GUESTBOOK_API_URL!, {
+      const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
