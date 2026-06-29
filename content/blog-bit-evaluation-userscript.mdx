@@ -1,0 +1,161 @@
+---
+title: 'BIT 评教自动填写脚本'
+publishedAt: '2026-06-29'
+summary: '一个适合配合篡改猴使用的评教辅助脚本，可以一键选择每题第一个选项，并在建议框填写“好”。'
+category: 'Tech'
+---
+
+## 简介
+
+这是一个用于 BIT 评教页面的 userscript 脚本，主要功能是自动选择每题的第一个选项，并在建议框中填写“好”。
+
+推荐结合浏览器扩展 **篡改猴（Tampermonkey）** 使用：新建脚本后粘贴下面的代码，进入评教页面后点击右下角的“填评教”按钮即可。
+
+使用前建议确认每题第一个选项是否符合真实评价，提交前也最好再手动检查一遍。
+
+## 脚本代码
+
+```javascript
+// ==UserScript==
+// @name         BIT 自动评教
+// @namespace    https://pj.bit.edu.cn/
+// @version      1.0
+// @description  自动选择每题第一个选项，并在建议框填写“好”
+// @match        https://pj.bit.edu.cn/pjxt2.0/*
+// @run-at       document-idle
+// @grant        none
+// @noframes
+// ==/UserScript==
+
+(function () {
+  'use strict';
+
+  if (window.top !== window.self) return;
+
+  const ADVICE_TEXT = '好';
+  const AUTO_RUN = false;
+  const AUTO_SUBMIT = false;
+
+  function getDocs() {
+    const docs = [document];
+
+    for (const iframe of document.querySelectorAll('iframe')) {
+      try {
+        if (iframe.contentDocument) {
+          docs.push(iframe.contentDocument);
+        }
+      } catch (e) {
+        console.warn('[评教脚本] 无法访问 iframe，可能是跨域：', iframe.src);
+      }
+    }
+
+    return docs;
+  }
+
+  function isUsable(el) {
+    if (!el || el.disabled || el.readOnly) return false;
+    if (el.type === 'hidden') return false;
+
+    const style = el.ownerDocument.defaultView.getComputedStyle(el);
+    return style.display !== 'none' && style.visibility !== 'hidden';
+  }
+
+  function fireEvents(el) {
+    ['input', 'change', 'blur'].forEach(type => {
+      el.dispatchEvent(new Event(type, { bubbles: true }));
+    });
+  }
+
+  function fillOneDoc(doc) {
+    const radios = Array.from(doc.querySelectorAll('input[type="radio"]'))
+      .filter(isUsable);
+
+    const groups = new Map();
+
+    for (const radio of radios) {
+      const key = radio.name || radio.id;
+      if (!key) continue;
+
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(radio);
+    }
+
+    let radioCount = 0;
+
+    for (const group of groups.values()) {
+      const first = group[0];
+      if (first) {
+        first.click();
+        first.checked = true;
+        fireEvents(first);
+        radioCount++;
+      }
+    }
+
+    const textFields = Array.from(doc.querySelectorAll(
+      'textarea, input[type="text"], input:not([type])'
+    )).filter(isUsable);
+
+    let textFilled = false;
+
+    if (textFields.length > 0) {
+      const last = textFields[textFields.length - 1];
+      last.focus();
+      last.value = ADVICE_TEXT;
+      fireEvents(last);
+      textFilled = true;
+    }
+
+    return { radioCount, textFilled };
+  }
+
+  function fillEvaluation() {
+    let totalRadioGroups = 0;
+    let filledText = false;
+
+    for (const doc of getDocs()) {
+      const result = fillOneDoc(doc);
+      totalRadioGroups += result.radioCount;
+      filledText ||= result.textFilled;
+    }
+
+    console.log(`[评教脚本] 已处理 ${totalRadioGroups} 组单选题，建议框：${filledText ? '已填写' : '未找到'}`);
+
+    if (AUTO_SUBMIT) {
+      alert('AUTO_SUBMIT 当前未开启，请手动提交。');
+    }
+  }
+
+  function addButton() {
+    if (document.getElementById('tm-fill-evaluation-btn')) return;
+
+    const btn = document.createElement('button');
+    btn.id = 'tm-fill-evaluation-btn';
+    btn.textContent = '填评教';
+    btn.style.cssText = `
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 999999;
+      padding: 8px 12px;
+      border: 0;
+      border-radius: 6px;
+      background: #1677ff;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    `;
+    btn.addEventListener('click', fillEvaluation);
+    document.body.appendChild(btn);
+  }
+
+  setTimeout(() => {
+    addButton();
+
+    if (AUTO_RUN) {
+      fillEvaluation();
+    }
+  }, 1500);
+})();
+```
