@@ -6,7 +6,7 @@ category: 'Tech'
 
 - 理解ELF-pytorch代码库
     1. `decoder_prob=0.2`指的是每一个训练step，有20%概率训练decoder分支，剩下概率训练denoiser分支
-        一条数据是从什么时候开始分叉的，是处理到什么阶段开始分叉的
+        - 一条数据是从什么时候开始分叉的，是处理到什么阶段开始分叉的
     2. ==翻译和摘要任务 cfgs: [2]  self_cond_cfg_scales: [1]== 这两个参数分别是什么含义
          $v_{\mathrm{CFG}}=v_{\mathrm{uncond}}+s_{\mathrm{CFG}}\left(v_{\mathrm{cond}}-v_{\mathrm{uncond}}\right)$  如果这里的cfg系数取2，表示适当放大对输入条件的遵循
          $v_{\mathrm{SC-CFG}}=v_{\mathrm{no-SC}}+s_{\mathrm{SC}}\left(v_{\mathrm{with-SC}}-v_{\mathrm{no-SC}}\right)$  这里取1，表示普通的self-conditioning
@@ -15,7 +15,7 @@ category: 'Tech'
         | 0 | 不采用上一轮预测 |
         | 1 | 普通 self-conditioning |
         | >1 | 放大上一轮预测提供的修正方向 |
-        这里是先进行CFG，还是先进行SC（我猜是先进行CFG）
+        - 这里是先进行CFG，还是先进行SC（我猜是先进行CFG）
     3. `sde_gamma`控制每一步注入多少噪声，如果为0，退化为ODE。ELF的SDE比较复杂，是每一步先回退一小部分，然后再稍微加载，然后去噪到下一状态
     4.  $t\in[0,1]$  上的采样也可以调整，可以先正态分布采样一个序列，然后再sigmoid，再排序，再补上0和1
     5. ELFloss，中间过程是denoise的连续空间MSE，decode使用token cross entropy
@@ -39,35 +39,35 @@ category: 'Tech'
                   L2 loss                    CE loss
         ```
     8. 主要是不理解decoder为什么也要经过Transformer
-        decoder的任务是，利用整句话的上下文，把有误差、有噪声的contextual embedding恢复成离散的token。T5 encoder输出的每个位置，不是静态词向量，而是经过Transformer建模之后的表示。ELF就是在这个context embedding space上进行flow的。最后换成token的时候，也不是简单的查表
-        解码的时候，其实每一个token也要考虑其他位置的语义影响，否则就是  $\mathrm{logits}_i=Wz_i+b$  ，这样相当于把每个embedding独立投影到词表（并且这个embedding其实充满噪声和误差（预测误差、积分误差、采样误差）），举一个例子，假如这个位置，在句子当中，解码成`bank`会更合理，但是这个位置的token，因为各种噪声和误差，更偏向于`river`，那么每个位置单独解码的话，就救不回来了
-        这里的Transformer可以看成是一个context 修正器+latent误差纠正器
-        特别注意，ELF的decoder不是自回归的，是通过连续流一次性生成了整段序列的latent，
-        注意两个任务的输出头不一样，
+        - decoder的任务是，利用整句话的上下文，把有误差、有噪声的contextual embedding恢复成离散的token。T5 encoder输出的每个位置，不是静态词向量，而是经过Transformer建模之后的表示。ELF就是在这个context embedding space上进行flow的。最后换成token的时候，也不是简单的查表
+        - 解码的时候，其实每一个token也要考虑其他位置的语义影响，否则就是  $\mathrm{logits}_i=Wz_i+b$  ，这样相当于把每个embedding独立投影到词表（并且这个embedding其实充满噪声和误差（预测误差、积分误差、采样误差）），举一个例子，假如这个位置，在句子当中，解码成`bank`会更合理，但是这个位置的token，因为各种噪声和误差，更偏向于`river`，那么每个位置单独解码的话，就救不回来了
+        - 这里的Transformer可以看成是一个context 修正器+latent误差纠正器
+        - 特别注意，ELF的decoder不是自回归的，是通过连续流一次性生成了整段序列的latent，
+        - 注意两个任务的输出头不一样，
 
-        Denoiser 使用 `final_layer` 预测干净 latent
+        - Denoiser 使用 `final_layer` 预测干净 latent
 
-        Decoder 使用 `proj_kernel + unembed_kernel` 预测词表 logits
+        - Decoder 使用 `proj_kernel + unembed_kernel` 预测词表 logits
     9. 还有，如果任务有两个分支，那么损失是分开计算还是？
-        denoiser部分算的是L2 loss，decoder部分算的是CE loss
-        训练时，按单张GPU上的local batch级别随机选择decoder和denoiser，注意不是每个样本独立选择，一张卡batch内所有样本都走同一个任务。
+        - denoiser部分算的是L2 loss，decoder部分算的是CE loss
+        - 训练时，按单张GPU上的local batch级别随机选择decoder和denoiser，注意不是每个样本独立选择，一张卡batch内所有样本都走同一个任务。
 
-        `global_batch_size = 512`
+        - `global_batch_size = 512`
 
-        `world_size = 8`
+        - `world_size = 8`
 
-        `grad_accum_steps = 1`
+        - `grad_accum_steps = 1`
 
-        那么每张卡一次拿到64条数据，每张 GPU 独立随机选择 Decoder 或 Denoiser 分支
-        如果这一批进入了decode分支，那么这一批算的loss就是CE loss。最后（8张卡一共处理完512条数据之后）DDP会同步、平均8张GPU的梯度，执行一次梯度更新
-        `grad_accum_steps: int = 1`表示经过一个`global batch`就更新一次梯度，如果是4，说明要512*4=2018条数据更新一次梯度
+        - 那么每张卡一次拿到64条数据，每张 GPU 独立随机选择 Decoder 或 Denoiser 分支
+        - 如果这一批进入了decode分支，那么这一批算的loss就是CE loss。最后（8张卡一共处理完512条数据之后）DDP会同步、平均8张GPU的梯度，执行一次梯度更新
+        - `grad_accum_steps: int = 1`表示经过一个`global batch`就更新一次梯度，如果是4，说明要512*4=2018条数据更新一次梯度
     10. 这里是不是有两个Transformer模块，T5里面一个，但是这个不更新，然后denoiser和decoder还共享一个
     11. denoiser和decoder分别都是怎么训练的，它们接受的输入有什么不同
     12. 这个仓库一共有几个任务，有没有“接收外界条件生成（CFG）”
-        训练配置也明确使用 [ (line 52)](/D:/User/Desktop/ELF/pytorch_lightning/configs/training_configs/train_owt_ELF-B.yml:52)`uncond_sampling_configs.yml`。因此当前复现任务是从随机噪声直接生成文本，没有额外的 prompt、类别标签或输入句子
-        `self_cond_prob: 0.5` 不是“50% 有文本条件”，而是说对于每一个去噪步，模型有50%的概率迭代预测两次（也就是模拟推理过程中的“非初始步”）（注意第一次模型预测不计入梯度），有50%（也就是假设模拟推理时以当前输入作为初始，self-conditioning全部置0）
+        - 训练配置也明确使用 [ (line 52)](/D:/User/Desktop/ELF/pytorch_lightning/configs/training_configs/train_owt_ELF-B.yml:52)`uncond_sampling_configs.yml`。因此当前复现任务是从随机噪声直接生成文本，没有额外的 prompt、类别标签或输入句子
+        - `self_cond_prob: 0.5` 不是“50% 有文本条件”，而是说对于每一个去噪步，模型有50%的概率迭代预测两次（也就是模拟推理过程中的“非初始步”）（注意第一次模型预测不计入梯度），有50%（也就是假设模拟推理时以当前输入作为初始，self-conditioning全部置0）
 
-        真实训练时，不是这样一步一步去噪的，而是为每一个样本随机采样一个t，然后构造该时刻的带噪latent  $z_t$  ，
+        - 真实训练时，不是这样一步一步去噪的，而是为每一个样本随机采样一个t，然后构造该时刻的带噪latent  $z_t$  ，
 
         ```js
         z_t,t -> 第一次预测 x̂0（无梯度）
@@ -75,9 +75,9 @@ category: 'Tech'
         z_t,t + x̂0 -> 第二次预测（计算梯度）
         ```
 
-        它是在近似模拟“推理中已经存在上一轮预测”的输入状态
+        - 它是在近似模拟“推理中已经存在上一轮预测”的输入状态
 
-        其实在写代码的时候，是始终进行两轮，第一轮生成  $\hat{x}_0^{(1)}$  ，但是只有50%的概率会把它当成第二轮的self-conditioning
+        - 其实在写代码的时候，是始终进行两轮，第一轮生成  $\hat{x}_0^{(1)}$  ，但是只有50%的概率会把它当成第二轮的self-conditioning
     13. 这里面的self-condition CFG是怎么跑的
         > 当前配置还启用了 SC-CFG，它会为了构造训练目标增加额外的无梯度前向。因此“始终两轮”准确描述的是基础 self-conditioning 逻辑，不一定是整个 Denoiser 分支实际执行的总前向次数
     ---
