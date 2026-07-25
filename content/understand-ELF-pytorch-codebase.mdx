@@ -5,7 +5,7 @@ category: 'Tech'
 ---
 
 - 理解ELF-pytorch代码库
-    1. `decoder_prob=0.2`指的是每一个训练step，有20%概率训练decoder分支，剩下概率训练denoiser分支
+    1. `decoder_prob=0.2`指的是每一个训练step，有20%概率训练decoder分支，剩下概率训练denoiser分支（）
         - 一条数据是从什么时候开始分叉的，是处理到什么阶段开始分叉的
     2. ==翻译和摘要任务 cfgs: [2]  self_cond_cfg_scales: [1]== 这两个参数分别是什么含义
          $v_{\mathrm{CFG}}=v_{\mathrm{uncond}}+s_{\mathrm{CFG}}\left(v_{\mathrm{cond}}-v_{\mathrm{uncond}}\right)$  如果这里的cfg系数取2，表示适当放大对输入条件的遵循
