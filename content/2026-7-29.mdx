@@ -1,0 +1,29 @@
+---
+title: '2026年7月29日'
+publishedAt: '2026-07-29'
+category: 'Daily'
+---
+
+2026年7月29日
+
+大写的Tensor，也就是torch.Tensor，指的是张量的类，说明返回的对象是一个张量，小写的tensor是一个创建张量的函数，比如torch.tensor([1, 2]
+
+`prediction, du_dt = torch.func.jvp(func, primals, tangents)`，Pytorch官方把JVP定义为，在primals指定的位置计算函数值，同时计算该点的Jacobian乘以tangents指定的方向（`tangents` 必须和 `primals` 具有相同的结构以及对应的形状）**（返回一个二元数组，一个是普通的前向输出u，一个是方向导数，du/dt）**
+
+`primals`：函数当前的实际输入，相当于描述模型当前所在的坐标（矩阵）
+
+`tangents`：说明沿着哪条路径对函数求导（矩阵）
+
+$$
+\frac{du_\theta}{dt}=\frac{\partial u_\theta}{\partial z_t}\frac{dz_t}{dt}+\frac{\partial u_\theta}{\partial r}\frac{dr}{dt}+\frac{\partial u_\theta}{\partial t}\frac{dt}{dt}
+$$
+
+这里面的 $\frac{dz_t}{dt}$ 就是瞬时速度 $v_t=\epsilon-x$ 
+
+JVP就是Jacobian乘以tangent
+
+Meanflow的监督目标
+
+$$
+u_{\mathrm{target}}=v_t-(t-r)\frac d{dt}u_\theta
+$$
